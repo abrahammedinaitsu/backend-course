@@ -8,9 +8,12 @@
 // change lives here — not scattered across handlers.
 
 // requests row -> HTTP representation.
+// NOTE: `BIGINT` arrives from pg as a STRING (pg avoids precision loss on 64-bit ints). The
+// class-3 contract promises a NUMBER for `id`, so the mapper coerces it. Without this, the
+// contract would break silently: clients comparing `id === 4` would get false.
 export function mapRequestRow(row) {
   return {
-    id: row.id,
+    id: Number(row.id),
     title: row.title,
     description: row.description,
     priority: row.priority,
