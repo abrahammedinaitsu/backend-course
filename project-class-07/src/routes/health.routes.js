@@ -1,34 +1,37 @@
-// OPS-703 · Operational endpoints (guided skeleton).
+// OPS-703 · Operational endpoints.
 //
 // Two DIFFERENT questions:
 //   GET /health  "Is the process alive?"        -> never touches PostgreSQL
 //   GET /ready   "Can it do useful work now?"   -> checks PostgreSQL cheaply
 // Reference: https://expressjs.com/en/advanced/healthcheck-graceful-shutdown/
-//
-// TODO(OPS-703): implement both routes. Checklist:
-//   [ ] GET /health answers 200 { "status": "ok" } — nothing more. It must
-//       keep answering even when the database is down.
-//   [ ] The database check is INJECTABLE: createHealthRouter accepts an
-//       optional checkDatabase function, and defaults to the cheapest
-//       possible real query (SELECT 1 through the shared pool). That is
-//       what lets a test hand in a failing check without breaking real
-//       credentials.
-//   [ ] GET /ready runs the check:
-//         success -> 200 { "status": "ready",     "database": "available" }
-//         failure -> 503 { "status": "not_ready", "database": "unavailable" }
-//       The failure answer is DELIBERATE (a controlled 503, not a crash)
-//       and reveals nothing: no host, no port, no user, no SQL, no stack.
-//
-// Questions before coding:
-//   - Can the process be alive but not ready? Who needs to distinguish that?
-//   - Why is 503 the right code here, and how is it different from 500?
 import express from 'express';
 import { pool } from '../database/pool.js';
 
-export function createHealthRouter({ checkDatabase } = {}) {
+// The cheapest possible real check: one round trip, no tables, no data.
+async function defaultCheckDatabase() {
+  await pool.query('SELECT 1');
+}
+
+export function createHealthRouter({ checkDatabase = defaultCheckDatabase } = {}) {
   const router = express.Router();
 
-  // TODO(OPS-703): add GET /health and GET /ready here.
+  // Liveness: the process is alive. It must answer even when the database
+  // is down, so it does NOT touch PostgreSQL at all.
+  router.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+  });
+
+  // Readiness: can this instance do useful work right now? It runs the
+  // injectable check. A failure is a DELIBERATE controlled 503, not a
+  // crash, and reveals nothing: no host, no port, no user, no SQL.
+  router.get('/ready', async (req, res) => {
+    try {
+      await checkDatabase();
+      res.status(200).json({ status: 'ready', database: 'available' });
+    } catch {
+      res.status(503).json({ status: 'not_ready', database: 'unavailable' });
+    }
+  });
 
   return router;
 }

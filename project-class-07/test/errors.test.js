@@ -1,4 +1,5 @@
-// Error contract tests — the regression suite for INC-701 and INC-702.
+// Error contract tests — the regression suite for INC-701 and INC-702,
+// plus the central error handler (OPS-703).
 //
 // Each test answers ONE question and follows the house style from
 // test/requests.test.js: Prepare -> Act -> Check, unique data per run,
@@ -32,6 +33,8 @@ test('an alphabetic id answers 400 INVALID_REQUEST_ID, not 500', async () => {
   // Check: 400 with the contract code — never a 500.
   assert.equal(response.status, 400);
   assert.equal(response.body.error.code, 'INVALID_REQUEST_ID');
+  // The error carries the requestId that the request-id middleware assigned.
+  assert.equal(typeof response.body.requestId, 'string');
 });
 
 test('decimal, zero and negative ids are rejected the same way', async () => {
@@ -127,4 +130,46 @@ test('the CHECK constraint is still the second defense in the database', async (
     ),
     (error) => error.code === '23514' || /check constraint/i.test(error.message)
   );
+});
+
+// ------------------------------------------------- central error handler
+
+test('an unexpected error answers a generic 500 without internal details', async () => {
+  // Provoke an unexpected error without breaking the real database: replace
+  // pool.query for one call, exactly like the validator does.
+  const owner = await createUser({ name: 'boom' });
+  const token = await loginAs(owner);
+
+  const real = pool.query.bind(pool);
+  pool.query = async () => { throw new Error('synthetic failure SECRET_MARKER'); };
+  let response;
+  try {
+    response = await request(app)
+      .get('/requests')
+      .set('Authorization', `Bearer ${token}`);
+  } finally {
+    pool.query = real;
+  }
+
+  assert.equal(response.status, 500);
+  assert.equal(response.body.error.code, 'INTERNAL_ERROR');
+  // The internal message and stack must stay in the log, never the response.
+  const raw = JSON.stringify(response.body);
+  assert.equal(raw.includes('SECRET_MARKER'), false);
+  assert.equal(raw.includes('at '), false);
+  assert.equal('stack' in response.body, false);
+});
+
+test('every error body shares the same shape: error.code, error.message, requestId', async () => {
+  const owner = await createUser({ name: 'shape' });
+  const token = await loginAs(owner);
+
+  const response = await request(app)
+    .get('/requests/not-a-number')
+    .set('Authorization', `Bearer ${token}`);
+
+  assert.equal(typeof response.body.error, 'object');
+  assert.equal(typeof response.body.error.code, 'string');
+  assert.equal(typeof response.body.error.message, 'string');
+  assert.equal(typeof response.body.requestId, 'string');
 });

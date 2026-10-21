@@ -2,7 +2,6 @@
 // more. It never decides what the actor may do — that is authorization,
 // and it lives in the module policies.
 import { AppError } from '../app-error.js';
-import { respondError } from '../http/respond-error.js';
 import { verifyToken } from '../modules/auth/token.js';
 
 const ROLES = ['requester', 'agent'];
@@ -41,6 +40,8 @@ export async function authenticate(req, res, next) {
     req.auth = { userId: payload.sub, role: payload.role };
     next();
   } catch (error) {
-    respondError(res, error);
+    // OPS-703: no local response format — the central error handler
+    // translates the typed error into the contract's answer.
+    next(error);
   }
 }
