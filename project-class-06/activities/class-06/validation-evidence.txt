@@ -1,0 +1,39 @@
+Salida real de: npm run validate:class-06
+(no contiene secretos; no se incluye ninguna captura del .env)
+
+$ npm run validate:class-06
+
+CLASS 06 FINAL VALIDATION
+
+Environment
+[01/12] Database is reachable .............. PASS
+[02/12] Migrations are complete ............ PASS
+[03/12] Seed data is available ............. PASS
+
+Regression
+[04/12] Valid empty collection returns 200 .. PASS
+[05/12] Empty collection returns [] ........ PASS
+
+History endpoint
+[06/12] Authentication is required ......... PASS
+[07/12] Owner can read history ............. PASS
+[08/12] Stranger cannot read history ....... PASS
+[09/12] Agent can read history ............. PASS
+[10/12] Missing request returns 404 ........ PASS
+[11/12] Events are ordered correctly ....... PASS
+[12/12] Sensitive information is hidden .... PASS
+
+Cleanup
+Temporary validation data removed successfully.
+
+FINAL RESULT: PASSED
+
+--------------------------------------------------------------------------------
+Nota de ejecución
+--------------------------------------------------------------------------------
+- Se corrió DOS VECES de forma consecutiva con el mismo resultado (PASSED 12/12),
+  lo que demuestra que es estable y que limpia sus datos temporales entre corridas.
+- El validador es de caja negra: levanta la aplicación contra la base del taller,
+  crea datos propios etiquetados, y los borra en un bloque garantizado.
+- La base del taller vive en el esquema `class06` del proyecto Supabase, separada
+  de las tablas de la clase 05 (esquema `public`). Ver work-log.md, sección Entorno.
