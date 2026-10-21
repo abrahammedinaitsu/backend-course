@@ -1,0 +1,6 @@
+# Configuración local: contiene la cadena real. Jamás se sube.
+.env
+
+# Dependencias y logs.
+node_modules/
+*.log
