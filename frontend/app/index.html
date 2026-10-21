@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solicitudes · /app</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <strong>Solicitudes</strong>
+      <span class="brand-sub">Request API v5 · entrega 05A</span>
+    </div>
+    <nav class="topnav">
+      <a href="/">Inicio</a>
+      <a href="/learn/">/learn</a>
+    </nav>
+    <div id="session-bar" class="session-box" data-state="anonymous">
+      <span id="session-user" class="session-user">Sin sesión</span>
+      <span id="session-role" class="session-role"></span>
+      <button id="logout-btn" hidden type="button">Salir</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ===================== Vista de autenticación ===================== -->
+    <section id="auth-view" class="panel auth-panel">
+      <h2>Entrar a la aplicación</h2>
+      <p class="lead">
+        Crea una cuenta o inicia sesión. La cuenta nueva siempre nace como
+        <strong>solicitante</strong>: el rol lo decide el servidor, nunca el formulario.
+      </p>
+
+      <div class="tabs" role="tablist">
+        <button id="tab-login" type="button" role="tab" class="is-active" aria-selected="true">Iniciar sesión</button>
+        <button id="tab-register" type="button" role="tab" aria-selected="false">Registrarme</button>
+      </div>
+
+      <!-- Login -->
+      <form id="login-form" class="stack" autocomplete="on">
+        <label>Email
+          <input name="email" type="email" required autocomplete="username">
+        </label>
+        <label>Contraseña
+          <input name="password" type="password" required minlength="15" maxlength="128" autocomplete="current-password">
+        </label>
+        <button type="submit">Iniciar sesión</button>
+        <p id="login-feedback" class="feedback" role="status" aria-live="polite"></p>
+      </form>
+
+      <!-- Registro -->
+      <form id="register-form" class="stack" hidden autocomplete="on">
+        <label>Email
+          <input name="email" type="email" required autocomplete="username">
+        </label>
+        <label>Contraseña <span class="hint">(mínimo 15 caracteres)</span>
+          <input name="password" type="password" required minlength="15" maxlength="128" autocomplete="new-password">
+        </label>
+        <button type="submit">Crear cuenta</button>
+        <p id="register-feedback" class="feedback" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <!-- ===================== Vista de la aplicación ===================== -->
+    <div id="app-view" hidden>
+      <!-- Crear solicitud (solo solicitante) -->
+      <section id="create-panel" class="panel">
+        <h2>Crear solicitud</h2>
+        <form id="create-form" class="stack">
+          <label>Título
+            <input name="title" type="text" required maxlength="200" placeholder="p. ej. El proyector del aula 204 no enciende">
+          </label>
+          <label>Descripción <span class="hint">(opcional)</span>
+            <input name="description" type="text" maxlength="2000" placeholder="Detalles que ayuden a atenderla">
+          </label>
+          <label>Prioridad
+            <select name="priority">
+              <option value="low">Baja</option>
+              <option value="medium" selected>Media</option>
+              <option value="high">Alta</option>
+            </select>
+          </label>
+          <button type="submit">Crear solicitud</button>
+          <p id="create-feedback" class="feedback" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <!-- Lista -->
+      <section id="list-panel" class="panel">
+        <div class="panel-head">
+          <h2 id="list-heading">Solicitudes</h2>
+          <div class="filters">
+            <label class="inline">Estado
+              <select id="filter-status">
+                <option value="">Todos</option>
+                <option value="open">Abierta</option>
+                <option value="in_progress">En progreso</option>
+                <option value="resolved">Resuelta</option>
+                <option value="closed">Cerrada</option>
+                <option value="cancelled">Cancelada</option>
+              </select>
+            </label>
+            <label class="inline">Prioridad
+              <select id="filter-priority">
+                <option value="">Todas</option>
+                <option value="low">Baja</option>
+                <option value="medium">Media</option>
+                <option value="high">Alta</option>
+              </select>
+            </label>
+            <button id="clear-filters" type="button" class="ghost">Limpiar</button>
+          </div>
+        </div>
+        <p id="list-feedback" class="feedback" role="status" aria-live="polite"></p>
+        <ul id="requests-list" class="request-list"></ul>
+      </section>
+
+      <!-- Detalle -->
+      <section id="detail-panel" class="panel" hidden>
+        <div class="panel-head">
+          <h2>Detalle</h2>
+          <button id="close-detail" type="button" class="ghost">Cerrar</button>
+        </div>
+        <p id="detail-feedback" class="feedback" role="status" aria-live="polite"></p>
+        <div id="detail-body"></div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
