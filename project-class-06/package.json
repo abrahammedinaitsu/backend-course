@@ -1,0 +1,33 @@
+{
+  "name": "class-06-request-api",
+  "version": "6.0.0",
+  "private": true,
+  "description": "Request API \u2014 class 06 onboarding workshop (starter)",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test --test-concurrency=1 \"test/*.test.js\"",
+    "test:auth": "node --test --test-concurrency=1 test/auth.test.js",
+    "test:requests": "node --test --test-concurrency=1 test/requests.test.js",
+    "generate:secret": "node scripts/generate-secret.js",
+    "class-06:doctor": "node scripts/check-environment.js",
+    "db:migrate": "node scripts/migrate.js",
+    "db:seed": "node scripts/seed.js",
+    "exercise:test-failure": "node scripts/exercise-test-failure.js",
+    "validate:class-06": "node scripts/validate-class-06.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "jose": "^5.9.6",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0"
+  }
+}
