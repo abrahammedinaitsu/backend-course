@@ -32,7 +32,9 @@ const requests = [
 
 let nextId = 4;
 
-app.get('/getRequests', (req, res) => {
+// FIX 1 — The listing route is the resource itself: '/requests' (noun), not '/getRequests'.
+// The HTTP method (GET) already expresses the operation, so the path must not repeat it.
+app.get('/requests', (req, res) => {
   res.json(requests);
 });
 
@@ -41,16 +43,26 @@ app.get('/requests/:id', (req, res) => {
   const request = requests.find((item) => item.id === id);
 
   if (!request) {
-    return res.json({ error: 'Request not found' });
+    // FIX 2 — A non-existent resource must not answer 200. It answers 404, so a client
+    // that decides by the status code can tell "exists" from "does not exist".
+    return res.status(404).json({ error: 'Request not found' });
   }
 
   res.json(request);
 });
 
 app.post('/requests', (req, res) => {
+  const title = req.body.title;
+
+  // FIX 4 — Validate before mutating: a missing or blank title means the client request is
+  // incomplete, so it answers 400 and does NOT push anything into the collection.
+  if (typeof title !== 'string' || title.trim() === '') {
+    return res.status(400).json({ error: 'Title is required' });
+  }
+
   const newRequest = {
     id: nextId,
-    title: req.body.title,
+    title: title.trim(),
     description: req.body.description,
     status: 'open',
     priority: req.body.priority
@@ -59,7 +71,9 @@ app.post('/requests', (req, res) => {
   nextId = nextId + 1;
   requests.push(newRequest);
 
-  res.status(200).json(newRequest);
+  // FIX 3 — Creating a new resource answers 201 Created, not 200. 200 is reserved for
+  // successful reads/updates; 201 tells the client a new resource now exists.
+  res.status(201).json(newRequest);
 });
 
 app.listen(PORT, () => {
