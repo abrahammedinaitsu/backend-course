@@ -86,3 +86,90 @@ test('an agent can move a request through a valid transition', async () => {
   assert.equal(response.status, 200);
   assert.equal(response.body.status, 'in_progress');
 });
+
+// --- BUG-106 regression ---------------------------------------------------
+// A valid filter with zero matches is an EMPTY COLLECTION, not a missing
+// resource. Before the fix the service threw REQUEST_NOT_FOUND (404) whenever
+// findAll returned no rows, breaking the class 03 collection contract.
+// This test fails on the buggy code and passes on the fix.
+test('a valid collection filter with zero matches answers 200 [] (BUG-106)', async () => {
+  // Prepare: a fresh requester owns no requests at all.
+  const owner = await createUser({ name: 'emptyfillter' });
+  const token = await loginAs(owner);
+
+  // Act: a VALID status filter that simply matches nothing for this owner.
+  const response = await request(app)
+    .get('/requests?status=closed')
+    .set('Authorization', `Bearer ${token}`);
+
+  // Check: 200 with a real empty array — NOT 404.
+  assert.equal(response.status, 200);
+  assert.deepEqual(response.body, []);
+});
+
+// --- FEATURE-206 · GET /requests/:id/history ------------------------------
+
+test('the owner can read their own request history, oldest first', async () => {
+  const owner = await createUser({ name: 'histowner' });
+  const token = await loginAs(owner);
+  const created = await createRequestAs(token);
+
+  const response = await request(app)
+    .get(`/requests/${created.id}/history`)
+    .set('Authorization', `Bearer ${token}`);
+
+  assert.equal(response.status, 200);
+  assert.ok(Array.isArray(response.body));
+  // Creation records the birth event: NULL -> open.
+  assert.equal(response.body.length, 1);
+  assert.equal(response.body[0].type, 'status_changed');
+  assert.equal(response.body[0].fromStatus, null);
+  assert.equal(response.body[0].toStatus, 'open');
+  // The contract does NOT expose the internal actor.
+  assert.equal('changedBy' in response.body[0], false);
+});
+
+test('a requester cannot read another user history (same 404 as the request)', async () => {
+  const owner = await createUser({ name: 'histvictim' });
+  const stranger = await createUser({ name: 'histstranger' });
+  const ownerToken = await loginAs(owner);
+  const strangerToken = await loginAs(stranger);
+  const savedRequest = await createRequestAs(ownerToken);
+
+  const response = await request(app)
+    .get(`/requests/${savedRequest.id}/history`)
+    .set('Authorization', `Bearer ${strangerToken}`);
+
+  assert.equal(response.status, 404);
+});
+
+test('an agent can read any request history', async () => {
+  const owner = await createUser({ name: 'histanyowner' });
+  const agent = await createUser({ name: 'histanyagent', role: 'agent' });
+  const ownerToken = await loginAs(owner);
+  const agentToken = await loginAs(agent);
+  const created = await createRequestAs(ownerToken);
+
+  const response = await request(app)
+    .get(`/requests/${created.id}/history`)
+    .set('Authorization', `Bearer ${agentToken}`);
+
+  assert.equal(response.status, 200);
+  assert.ok(Array.isArray(response.body));
+});
+
+test('a missing request history answers 404', async () => {
+  const owner = await createUser({ name: 'histmissing' });
+  const token = await loginAs(owner);
+
+  const response = await request(app)
+    .get('/requests/999999999/history')
+    .set('Authorization', `Bearer ${token}`);
+
+  assert.equal(response.status, 404);
+});
+
+test('the history endpoint requires a Bearer token', async () => {
+  const response = await request(app).get('/requests/1/history');
+  assert.equal(response.status, 401);
+});
