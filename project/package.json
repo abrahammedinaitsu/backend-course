@@ -1,17 +1,19 @@
 {
   "name": "request-api",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "private": true,
-  "description": "Transversal project: modular Express API for maintenance requests persisted in PostgreSQL",
+  "description": "Proyecto transversal: API Express modular de solicitudes de mantenimiento, con identidad (auth, propiedad y permisos) e historial en PostgreSQL",
   "type": "module",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "db:check": "node scripts/check-database.js"
+    "db:check": "node scripts/check-database.js",
+    "validate:class-05": "node scripts/validate-class-05.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
+    "jose": "^5.9.6",
     "pg": "^8.13.1"
   }
 }

@@ -1,16 +1,12 @@
-// The one place where a database row becomes the representation the HTTP contract promises.
+// El único puente entre las filas SQL (snake_case) y la representación HTTP que promete el
+// contrato (camelCase). Una fila NO es automáticamente la respuesta HTTP.
 //
-// A row speaks snake_case (the shape of the table); the contract promises camelCase. If we
-// returned the row directly, the contract would break silently: every client reading
-// `createdAt` would get `undefined`.
+// Nota de la clase 04 que sigue vigente: `BIGINT` vuelve de pg como STRING (pg evita perder
+// precisión en enteros de 64 bits). El contrato promete un NUMBER para `id`, así que el mapper
+// lo coerciona. Sin esto, el contrato se rompería en silencio.
 //
-// A pure function, in a single file. If the representation gains a field or renames one, the
-// change lives here — not scattered across handlers.
-
-// requests row -> HTTP representation.
-// NOTE: `BIGINT` arrives from pg as a STRING (pg avoids precision loss on 64-bit ints). The
-// class-3 contract promises a NUMBER for `id`, so the mapper coerces it. Without this, the
-// contract would break silently: clients comparing `id === 4` would get false.
+// Novedad de la clase 05: se exponen `createdBy` (dueño de la solicitud) y `changedBy` (actor
+// de cada transición). Son datos del contrato, no material sensible.
 export function mapRequestRow(row) {
   return {
     id: Number(row.id),
@@ -19,15 +15,16 @@ export function mapRequestRow(row) {
     priority: row.priority,
     status: row.status,
     createdAt: row.created_at,
-    updatedAt: row.updated_at
+    updatedAt: row.updated_at,
+    createdBy: row.created_by
   };
 }
 
-// request_status_history row -> HTTP representation (for GET /requests/:id/history).
 export function mapHistoryRow(row) {
   return {
     previousStatus: row.previous_status,
     newStatus: row.new_status,
-    changedAt: row.changed_at
+    changedAt: row.changed_at,
+    changedBy: row.changed_by
   };
 }

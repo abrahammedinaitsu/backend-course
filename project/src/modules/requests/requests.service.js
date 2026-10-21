@@ -1,148 +1,215 @@
-// The service coordinates. It exists because ONE operation now spans five steps and a
-// transaction: read previous status -> protect the transition -> update -> record history ->
-// all in one unit -> return the result. That coordination is not HTTP (not routes), not a
-// query (not the store), not a pure rule (not request-status). It needs its own place.
+// El service coordina. Existe porque UNA operación ahora abarca varios pasos y una transacción:
+// leer el estado previo -> autorizar contra la fila actual -> actualizar -> registrar la
+// historia -> todo en una unidad -> devolver el resultado. Esa coordinación no es HTTP (rutas),
+// no es una consulta (store) ni una regla pura (request-status/policy). Necesita su lugar.
 //
-// The service does NOT know what a status code is: it throws typed errors and routes translate
-// them. Each layer speaks its own language.
-import * as store from './requests.store.js';
-import { mapRequestRow, mapHistoryRow } from './request.mapper.js';
-import { isValidStatus, isTerminal, canTransition } from './request-status.js';
+// El service NO sabe qué es un código de estado HTTP: lanza errores tipados (AppError) y la
+// capa HTTP los traduce en un único punto (src/http/respond-error.js).
+//
+// Cambios de la clase 05 (estaciones 6 y 7):
+//   * cada operación recibe el ACTOR primero (req.auth, del token verificado);
+//   * los campos controlados por el servidor se rechazan EXPLÍCITAMENTE (400);
+//   * createdBy/changedBy salen del actor, jamás del body;
+//   * la colección del requester se acota en SQL (createdBy en el store);
+//   * el recurso ajeno responde el MISMO 404 que el inexistente;
+//   * la política se aplica TODO-O-NADA antes de escribir nada.
+import { AppError } from '../../app-error.js';
 import { withTransaction } from '../../database/transaction.js';
+import {
+  findAll,
+  findById,
+  insertRequest,
+  updateRequest,
+  insertStatusHistory,
+  findHistory
+} from './requests.store.js';
+import { mapRequestRow, mapHistoryRow } from './request.mapper.js';
+import { STATUSES, isValidStatus, isTerminal, canTransition } from './request-status.js';
+import {
+  canListAllRequests,
+  canViewRequest,
+  canViewHistory,
+  canCreateRequest,
+  canEditContent,
+  canChangePriority,
+  canChangeStatus
+} from './request.policy.js';
 
 const PRIORITIES = ['low', 'medium', 'high'];
+const UPDATABLE_FIELDS = ['title', 'description', 'priority', 'status'];
 
-// Typed errors the route layer knows how to translate. They carry the machine `code` and the
-// HTTP status, so the translation table lives in one place.
-export class HttpError extends Error {
-  constructor(httpStatus, code, message) {
-    super(message);
-    this.httpStatus = httpStatus;
-    this.code = code;
+// Campos que el cliente NUNCA decide: identidad, dueño, actor y marcas de tiempo.
+// `status` se controla solo en la CREACIÓN (una solicitud nace abierta).
+const SERVER_CONTROLLED_FIELDS = ['id', 'createdBy', 'createdAt', 'updatedAt', 'changedBy'];
+
+function assertValidPriority(priority) {
+  if (!PRIORITIES.includes(priority)) {
+    throw new AppError('contract', 'INVALID_PRIORITY',
+      `Unknown priority "${priority}". Valid values: ${PRIORITIES.join(', ')}.`);
   }
 }
 
-const contract = (code, message) => new HttpError(400, code, message);
-const notFound = (message = 'Request not found') =>
-  new HttpError(404, 'REQUEST_NOT_FOUND', message);
+// Rechazo EXPLÍCITO de campos controlados por el servidor. Ignorarlos en silencio enseñaría
+// que intentar es gratis; el contrato los prohíbe y el mensaje lo dice.
+function assertNoServerControlledFields(body, extra = []) {
+  const forbidden = [...SERVER_CONTROLLED_FIELDS, ...extra];
+  for (const field of forbidden) {
+    if (body?.[field] !== undefined) {
+      throw new AppError('contract', 'SERVER_CONTROLLED_FIELD',
+        `The field "${field}" is controlled by the server and cannot be sent.`);
+    }
+  }
+}
 
-// GET /requests -> collection of representations.
-export async function listRequests(filters) {
-  const rows = await store.findAll(filters);
+// GET /requests -> colección de representaciones.
+// Requester: solo lo propio (el acotamiento vive en SQL). Agent: todo, incluidas las heredadas.
+export async function listRequests(actor, filters = {}) {
+  if (filters.status !== undefined && !isValidStatus(filters.status)) {
+    throw new AppError('contract', 'INVALID_FILTER',
+      `Unknown status "${filters.status}". Valid values: ${STATUSES.join(', ')}.`);
+  }
+  if (filters.priority !== undefined && !PRIORITIES.includes(filters.priority)) {
+    throw new AppError('contract', 'INVALID_FILTER',
+      `Unknown priority "${filters.priority}". Valid values: ${PRIORITIES.join(', ')}.`);
+  }
+
+  const scope = canListAllRequests(actor) ? {} : { createdBy: actor.userId };
+  const rows = await findAll({ ...filters, ...scope });
   return rows.map(mapRequestRow);
 }
 
-// GET /requests/:id -> representation, or 404.
-export async function getRequest(id) {
-  const row = await store.findById(id);
-  if (!row) throw notFound();
+// GET /requests/:id -> representación, o 404.
+// El recurso ajeno responde EXACTAMENTE el mismo 404 que el inexistente: un 403 confirmaría
+// que existe (enumeración gratis).
+export async function getRequest(actor, id) {
+  const row = await findById(id);
+  if (!row || !canViewRequest(actor, mapRequestRow(row))) {
+    throw new AppError('resource', 'REQUEST_NOT_FOUND', `Request ${id} does not exist.`);
+  }
   return mapRequestRow(row);
 }
 
-// POST /requests -> created representation.
-// The request and the record of its birth form ONE unit: a request must not exist without the
-// row that records it was born. This is why create opens a transaction too.
-export async function createRequest({ title, description, priority }) {
+// POST /requests -> representación creada.
+// La solicitud y el registro de su nacimiento forman UNA unidad: no debe existir sin la fila
+// que registra que nació. Por eso crear también abre una transacción.
+export async function createRequest(actor, input) {
+  // `status` al crear también es del servidor: una solicitud nace abierta.
+  assertNoServerControlledFields(input, ['status']);
+
+  const { title, description, priority } = input ?? {};
+
+  if (!canCreateRequest(actor)) {
+    throw new AppError('forbidden', 'FORBIDDEN', 'Your role cannot create requests.');
+  }
   if (typeof title !== 'string' || title.trim() === '') {
-    throw contract('TITLE_REQUIRED', 'Title is required');
+    throw new AppError('contract', 'TITLE_REQUIRED', 'A request needs a non-empty title.');
   }
-  if (priority !== undefined && !PRIORITIES.includes(priority)) {
-    throw contract('INVALID_PRIORITY', `Unknown priority: ${priority}`);
-  }
+  if (priority !== undefined) assertValidPriority(priority);
 
   const row = await withTransaction(async (client) => {
-    // id, status and timestamps are decided by the server/database; client values are ignored.
-    const created = await store.create(
-      { title: title.trim(), description, priority },
-      client
-    );
-    // Record the birth: NULL -> open.
-    await store.insertHistory(created.id, null, created.status, client);
+    const created = await insertRequest({
+      title: title.trim(),
+      description: typeof description === 'string' ? description : null,
+      priority: priority ?? 'medium',
+      // El dueño sale del token verificado, NUNCA del body.
+      createdBy: actor.userId
+    }, client);
+    // Nacimiento: NULL -> open. El creador queda como actor de ese primer evento.
+    await insertStatusHistory(created.id, null, created.status, actor.userId, client);
     return created;
   });
 
   return mapRequestRow(row);
 }
 
-// PATCH /requests/:id -> updated representation.
-export async function updateRequest(id, changes) {
-  const current = await store.findById(id);
-  if (!current) throw notFound();
+// PATCH /requests/:id -> representación actualizada.
+export async function patchRequest(actor, id, body) {
+  assertNoServerControlledFields(body);
 
-  // A terminal request cannot be modified at all, not even its title. -> 409
-  if (isTerminal(current.status)) {
-    throw new HttpError(
-      409,
-      'REQUEST_IN_TERMINAL_STATUS',
-      `Request is ${current.status} and cannot be modified`
-    );
+  const changes = {};
+  for (const field of UPDATABLE_FIELDS) {
+    if (body?.[field] !== undefined) changes[field] = body[field];
   }
 
-  const { title, description, priority, status } = changes;
-
-  const hasModifiableField =
-    title !== undefined ||
-    description !== undefined ||
-    priority !== undefined ||
-    status !== undefined;
-
-  if (!hasModifiableField) {
-    throw contract('NOTHING_TO_UPDATE', 'No modifiable fields in the body');
+  if (Object.keys(changes).length === 0) {
+    throw new AppError('contract', 'NOTHING_TO_UPDATE',
+      `The body must include at least one of: ${UPDATABLE_FIELDS.join(', ')}.`);
   }
-
-  if (title !== undefined && (typeof title !== 'string' || title.trim() === '')) {
-    throw contract('TITLE_REQUIRED', 'Title is required');
+  if (changes.title !== undefined && (typeof changes.title !== 'string' || changes.title.trim() === '')) {
+    throw new AppError('contract', 'TITLE_REQUIRED', 'The title cannot be empty.');
   }
-  if (priority !== undefined && !PRIORITIES.includes(priority)) {
-    throw contract('INVALID_PRIORITY', `Unknown priority: ${priority}`);
+  if (changes.priority !== undefined) assertValidPriority(changes.priority);
+  if (changes.status !== undefined && !isValidStatus(changes.status)) {
+    throw new AppError('contract', 'INVALID_STATUS',
+      `Unknown status "${changes.status}". Valid values: ${STATUSES.join(', ')}.`);
   }
+  if (changes.title !== undefined) changes.title = changes.title.trim();
 
-  // Fields other than status: a single UPDATE, no transaction needed.
-  const fieldChanges = {};
-  if (title !== undefined) fieldChanges.title = title.trim();
-  if (description !== undefined) fieldChanges.description = description;
-  if (priority !== undefined) fieldChanges.priority = priority;
-
-  if (status === undefined) {
-    const row = await store.update(id, fieldChanges);
-    if (!row) throw notFound();
-    return mapRequestRow(row);
-  }
-
-  // status present: validate it against the state machine BEFORE writing anything.
-  if (!isValidStatus(status)) {
-    // Unknown value: the request is malformed in itself. -> 400
-    throw contract('INVALID_STATUS_TRANSITION', `Unknown status: ${status}`);
-  }
-  if (!canTransition(current.status, status)) {
-    // Known value the current state forbids: well-formed request, impossible state. -> 409
-    throw new HttpError(
-      409,
-      'INVALID_STATUS_TRANSITION',
-      `Cannot change status from ${current.status} to ${status}`
-    );
-  }
-
-  // A status change plus other fields is still one unit: update the row and record the event
-  // together. If the history insert fails, the status change is rolled back.
+  // Leer, autorizar contra la fila actual, escribir y registrar historia — todo con el mismo
+  // cliente, como una unidad. La autorización ocurre DENTRO de la transacción, con la fila
+  // delante: ¿contra qué estado decidirías si no?
   const row = await withTransaction(async (client) => {
-    if (Object.keys(fieldChanges).length > 0) {
-      await store.update(id, fieldChanges, client);
+    const current = await findById(id, client);
+    if (!current) {
+      throw new AppError('resource', 'REQUEST_NOT_FOUND', `Request ${id} does not exist.`);
     }
-    const updated = await store.updateStatus(id, status, client);
-    await store.insertHistory(id, current.status, status, client);
+
+    const request = mapRequestRow(current);
+
+    // Primero visibilidad (404), después permiso (403): si no debes saber que existe, no hay
+    // conversación sobre permisos.
+    // Nota: un dueño puede ver su propia solicitud; si no la ve, es como si no existiera.
+    if (!canViewRequest(actor, request)) {
+      throw new AppError('resource', 'REQUEST_NOT_FOUND', `Request ${id} does not exist.`);
+    }
+
+    // Autorización TODO-O-NADA: si el body mezcla un campo permitido con uno prohibido, se
+    // rechaza ENTERO y no se aplica ninguna parte (nada de actualizaciones parciales sorpresa).
+    const touchesContent = changes.title !== undefined || changes.description !== undefined;
+    const touchesPriority = changes.priority !== undefined;
+    const touchesStatus = changes.status !== undefined && changes.status !== current.status;
+
+    if (touchesContent && !canEditContent(actor, request)) {
+      throw new AppError('forbidden', 'FORBIDDEN',
+        'Editing the content requires being the owner while the request is open.');
+    }
+    if (touchesPriority && !canChangePriority(actor)) {
+      throw new AppError('forbidden', 'FORBIDDEN', 'Your role cannot change the priority.');
+    }
+    if (touchesStatus && !canChangeStatus(actor)) {
+      throw new AppError('forbidden', 'FORBIDDEN', 'Your role cannot change the status.');
+    }
+
+    // Reglas de dominio (clase 03): siguen vigentes para TODOS los roles.
+    if (isTerminal(current.status)) {
+      throw new AppError('domain', 'REQUEST_IN_TERMINAL_STATUS',
+        `Request ${id} is ${current.status} and can no longer be modified.`);
+    }
+    if (changes.status !== undefined && changes.status !== current.status
+        && !canTransition(current.status, changes.status)) {
+      throw new AppError('domain', 'INVALID_STATUS_TRANSITION',
+        `A request cannot move from ${current.status} to ${changes.status}.`);
+    }
+
+    const updated = await updateRequest(id, changes, client);
+    if (touchesStatus) {
+      // El actor de la transición sale del token, nunca del body.
+      await insertStatusHistory(id, current.status, changes.status, actor.userId, client);
+    }
     return updated;
   });
 
   return mapRequestRow(row);
 }
 
-// GET /requests/:id/history -> array of events.
-// Distinguishes "request does not exist" (404) from "request exists with empty history" (200 []).
-export async function getRequestHistory(id) {
-  const row = await store.findById(id);
-  if (!row) throw notFound();
-
-  const events = await store.findHistory(id);
-  return events.map(mapHistoryRow);
+// GET /requests/:id/history -> arreglo de eventos.
+// Distingue "la solicitud no existe" (404) de "existe con historia vacía" (200 []).
+// El historial es tan privado como la solicitud: misma regla de visibilidad.
+export async function getHistory(actor, id) {
+  const row = await findById(id);
+  if (!row || !canViewHistory(actor, mapRequestRow(row))) {
+    throw new AppError('resource', 'REQUEST_NOT_FOUND', `Request ${id} does not exist.`);
+  }
+  const rows = await findHistory(id);
+  return rows.map(mapHistoryRow);
 }

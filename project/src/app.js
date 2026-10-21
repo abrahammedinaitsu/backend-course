@@ -1,67 +1,47 @@
-// Application setup: middlewares, route mounting and the central error handler. It does not
-// open any port, so the app can be mounted in a test without listening.
+// Configuración de la aplicación: middlewares, montaje de módulos y manejador de errores
+// central. NO abre ningún puerto, para poder montar la app en una prueba sin escuchar.
+//
+// Cambios de la clase 05:
+//   * CORS primero (las preflights se responden antes que nada);
+//   * se monta el módulo /auth (público salvo /auth/me, que se protege dentro);
+//   * TODAS las rutas de /requests exigen un actor confiable: `authenticate` corre primero y
+//     construye req.auth, o responde 401 y el router nunca se ejecuta.
 import express from 'express';
+import { corsPolicy } from './middleware/cors.js';
+import { authenticate } from './middleware/authenticate.js';
+import authRoutes from './modules/auth/auth.routes.js';
 import requestsRoutes from './modules/requests/requests.routes.js';
-import { HttpError } from './modules/requests/requests.service.js';
+import { respondError, errorBody } from './http/respond-error.js';
 
 const app = express();
 
-// Parses incoming JSON bodies into req.body.
+// CORS primero: responde las preflight y agrega las cabeceras de origen cuando corresponde.
+app.use(corsPolicy);
+
+// Convierte el body JSON entrante en req.body.
 app.use(express.json());
 
-// Every route inside the module is served under /requests.
-app.use('/requests', requestsRoutes);
+// /auth mezcla rutas públicas (register, login) y una protegida (/me), así que el módulo
+// aplica `authenticate` internamente donde hace falta.
+app.use('/auth', authRoutes);
 
-// No route matched -> resource category.
+// /requests queda protegido COMPLETO: authenticate corre antes que el router (una línea, cero
+// repetición). Sin token válido, el router jamás ve la petición.
+app.use('/requests', authenticate, requestsRoutes);
+
+// Ninguna ruta coincidió -> categoría recurso.
 app.use((req, res) => {
-  res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Resource not found' } });
+  res.status(404).json(errorBody('NOT_FOUND', 'Resource not found'));
 });
 
-// PostgreSQL error codes we translate. Anything unlisted is "internal".
-const PG_CONSTRAINT_VIOLATIONS = new Set(['23514', '23503', '23505', '23502']);
-const PG_UNAVAILABLE = new Set(['ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND', '57P01', '57P03']);
-
-// The central error handler. It classifies every failure into a category and responds with
-// the SAME shape as always: { error: { code, message } }. It never leaks secrets, hosts, SQL
-// or stack traces to the client.
+// Manejador de errores central. `respondError` (capa HTTP compartida) clasifica cada falla:
+//   * AppError -> por categoría (contract 400, auth 401, forbidden 403, resource 404, domain 409);
+//   * errores de pg -> persistencia (500) o infraestructura (503);
+//   * desconocidos -> 500 genérico, con el detalle solo en el log.
+// Nunca filtra secretos, hosts, SQL ni stack traces al cliente.
 // eslint-disable-next-line no-unused-vars
 app.use((error, req, res, next) => {
-  // Errors the service already classified (contract, resource, domain).
-  if (error instanceof HttpError) {
-    // Log internally without secrets; respond with the code message.
-    console.error(`[${error.code}] ${req.method} ${req.originalUrl}: ${error.message}`);
-    return res
-      .status(error.httpStatus)
-      .json({ error: { code: error.code, message: error.message } });
-  }
-
-  // Persistence: the database rejected something the app believed was valid — our bug.
-  if (PG_CONSTRAINT_VIOLATIONS.has(error.code)) {
-    console.error(`[PERSISTENCE_CONSTRAINT] ${req.method} ${req.originalUrl}: ${error.message}`);
-    return res.status(500).json({
-      error: {
-        code: 'PERSISTENCE_CONSTRAINT',
-        message: 'The data store rejected an operation due to an integrity constraint.'
-      }
-    });
-  }
-
-  // Infrastructure: the database is not reachable. Not the client's fault, not our bug.
-  if (PG_UNAVAILABLE.has(error.code) || error.code === 'ECONNRESET') {
-    console.error(`[DATABASE_UNAVAILABLE] ${req.method} ${req.originalUrl}: ${error.message}`);
-    return res.status(503).json({
-      error: {
-        code: 'DATABASE_UNAVAILABLE',
-        message: 'The service cannot access its data store.'
-      }
-    });
-  }
-
-  // Internal: unexpected error. The stack goes to the log, never to the client.
-  console.error(`[INTERNAL_ERROR] ${req.method} ${req.originalUrl}:`, error);
-  return res.status(500).json({
-    error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' }
-  });
+  respondError(res, error);
 });
 
 export default app;
