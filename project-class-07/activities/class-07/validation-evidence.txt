@@ -1,0 +1,42 @@
+Salida real de: npm run validate:class-07
+(no contiene secretos; no se incluye ninguna captura del .env ni tokens)
+
+$ npm run validate:class-07
+
+CLASS 07 INCIDENT VALIDATION
+
+Baseline
+[01/12] Existing contract preserved .......... PASS
+
+Input and errors
+[02/12] Invalid id returns 400 ............... PASS
+[03/12] Invalid priority returns 400 ......... PASS
+[04/12] Unknown request returns 404 .......... PASS
+[05/12] Invalid transition returns 409 ....... PASS
+[06/12] Unexpected errors return 500 ......... PASS
+[07/12] Internal details remain hidden ....... PASS
+
+Traceability
+[08/12] Response contains request id ......... PASS
+[09/12] Log contains the same request id ..... PASS
+[10/12] Authorization header is not logged ... PASS
+
+Operation
+[11/12] Health endpoint responds ............. PASS
+[12/12] Readiness checks PostgreSQL .......... PASS
+
+Cleanup
+Temporary validation data removed successfully.
+
+FINAL RESULT: PASSED
+
+--------------------------------------------------------------------------------
+Evidencia complementaria (resumen; el detalle está en incident-report.md)
+--------------------------------------------------------------------------------
+- npm run incidents:reproduce  ->  RESOLVED x3 (ANTES de corregir: REPRODUCED x3).
+- npm test                     ->  39 pass, 0 fail, 0 todo (los 17 stubs convertidos).
+- Se corrió DOS VECES de forma consecutiva con el mismo resultado (PASSED 12/12).
+- El validador es de caja negra: levanta la aplicación contra la base del taller,
+  crea datos sintéticos etiquetados y los borra en un bloque garantizado.
+- Base reutilizada de la clase 06 (esquema `class06`): db:migrate salió SKIPPED.
+- Los logs son JSON por línea y NO contienen Authorization, Bearer ni tokens (verificado).
