@@ -52,4 +52,6 @@ las demás clases) es la **copia de registro** de la entrega; el contenido es el
 ## Entregables de frontend (misma clase, semanas siguientes)
 
 - **05A** → `frontend/app/` — interfaz real que consume esta API (auth, roles, estados de UI).
-- **05B** → `frontend/learn/` — documentación interactiva «El mundo de la autenticación».
+  Terminada y verificada en el navegador contra el backend (detalle en `frontend/README.md`).
+- **05B** → `frontend/learn/` — documentación interactiva «El mundo de la autenticación»
+  (20 contenidos, 5 interacciones, 19 fuentes). Detalle en `frontend/learn/README.md`.

@@ -95,3 +95,64 @@ desde el body.
 hizo lo permitido** — y eso es exactamente lo que pide la matriz («¿atendió su propia
 solicitud?»). Aceptarlo del body lo volvería inútil: el atacante firmaría el acto con otro
 nombre (`400 SERVER_CONTROLLED_FIELD`).
+
+---
+
+## 007 — Dónde vive el token en el frontend (entrega 05A)
+
+**Decisión:** el token (`accessToken`) y el usuario actual viven **solo en memoria**, en
+`frontend/app/session.js`. No se usan `localStorage` ni `sessionStorage`.
+
+**Alternativas:** persistir el token para «no perder la sesión» al recargar.
+
+**Por qué:** `localStorage` es accesible por **cualquier** script del origen: un XSS lo cosecha.
+Guardarlo en memoria significa que al recargar se pierde y el usuario vuelve a entrar — es una
+**limitación honesta**, y el starter del curso lo advierte explícitamente. `localStorage` **no** es
+la solución universal: es una opción con un costo de seguridad concreto; la elegiríamos solo si
+la comodidad de «seguir logueado» valiera ese riesgo, y para esta demo educativa no lo vale. Nunca
+se hardcodea un token.
+
+## 008 — La interfaz no es la autorización (entrega 05A)
+
+**Decisión:** el frontend mantiene un **espejo** de la política (`frontend/app/domain.js`:
+`canEditContent`, `canChangePriority`, `canChangeStatus`) usado **solo** para decidir qué mostrar.
+El `<select>` de estado se puebla únicamente con `availableTransitions(status)`.
+
+**Alternativas:** mostrar todos los botones y dejar que el backend rechace; o «esconder» acciones
+al usuario como si eso fuera protección.
+
+**Por qué:** ocultar un botón **no protege el backend** — cualquiera llama al endpoint directo. El
+espejo existe para no **ofrecer** acciones que sabemos que fallarán y para dar pistas («solo editable
+mientras está abierta»), pero la decisión real la vuelve a tomar el servidor y su `403`/`404`/`409`
+se muestran tal cual. El `404` a lo ajeno **no** se traduce en el cliente: se muestra como «no existe
+o no es tuya», respetando la decisión 002 (no filtrar existencia).
+
+## 009 — Los estados de interfaz deben ser distinguibles (entrega 05A)
+
+**Decisión:** un solo clasificador (`frontend/app/errors.js`) traduce `(status, body)` a un mensaje y
+un `kind` propios: `0` (sin red/CORS) · `400` · `401` · `403` · `404` · `409` · `500` · `503`. Nada de
+un «algo salió mal» genérico.
+
+**Alternativas:** un mensaje único para todos los errores.
+
+**Por qué:** cada situación **es** distinta y pide una acción distinta del usuario: credenciales
+malas → corregir; sesión expirada → volver a entrar; sin permiso → no insistir; conflicto de estado
+→ refrescar; backend caído → revisar CORS. Colapsarlos en un mensaje pierde esa información y, de
+paso, incumple la rúbrica de «estados de interfaz, todos distinguibles».
+
+## 010 — La documentación interactúa, no decora (entrega 05B)
+
+**Decisión:** «El mundo de la autenticación» incluye **cinco** interacciones que transforman el
+entendimiento (la entrega pide ≥ 3): inspector de JWT (decodificar ≠ verificar), comparador de
+estrategias, árbol de decisión, matriz «autenticación ≠ autorización» y quiz. Cada afirmación
+importante se etiqueta por su naturaleza (**dato · interpretación · recomendación · decisión**) y se
+ancla a una fuente.
+
+**Alternativas:** una página de texto con enlaces, o interacciones decorativas (hover, acordeones).
+
+**Por qué:** el objetivo es **transformar** información técnica en comprensión. Un JWT de ejemplo que
+se «decodifica» y luego falla la verificación enseña en cinco segundos la confusión más cara del tema
+(leer ≠ confiar). El árbol convierte criterios en una decisión trazable. La matriz demuestra que
+«autenticado» no es «autorizado». Todo ejemplo es **ficticio** (ningún token, contraseña ni clave
+real) y el contenido construye el DOM con `textContent`, nunca `innerHTML`.
+
