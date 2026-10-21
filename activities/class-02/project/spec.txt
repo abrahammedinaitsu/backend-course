@@ -1,0 +1,62 @@
+SPEC — Request API Full (incremento 1)
+Escrita ANTES del primer prompt y ANTES de escribir los manejadores.
+No contiene código: contiene decisiones.
+
+RESOURCE
+  request = una solicitud de mantenimiento (maintenance request).
+  Fields:
+    id          integer  server-assigned  unique, incremental
+    title       string   required         set by client
+    description string   optional         set by client
+    status      string   server-assigned  always "open" on creation
+    priority    string   optional         set by client
+
+ENDPOINTS
+  1) List requests
+     method: GET
+     path:   /requests
+     input:  none
+     success: 200 + JSON array (possibly empty)
+     errors:  none defined
+
+  2) Read one request
+     method: GET
+     path:   /requests/:id      (id travels as a path parameter: identifies the resource)
+     input:  path parameter id
+     success: 200 + JSON object of the request
+     errors:  404 + {"error":"Request not found"} when no request has that id
+
+  3) Create a request
+     method: POST
+     path:   /requests
+     input:  JSON body { title, description?, priority? }
+     success: 201 + JSON object of the created request (with id and status "open")
+     errors:  400 + {"error":"Title is required"} when title is missing or blank;
+              in that case the store is NOT modified
+
+REPRESENTATION
+  All responses are JSON. Content-Type: application/json.
+  Error bodies always share the shape { "error": <string> }.
+  Filtering, if added later, must travel as a query parameter (it changes how the
+  collection is presented, not which resource it is) — NOT part of this increment.
+
+STORAGE
+  In memory only. An array in src/data/requests.js. Data resets on restart.
+  No database. Identifier generation is centralized in that module.
+
+STRUCTURE (each file justified by a responsibility, not by habit)
+  src/server.js                 starts the process, opens the port
+  src/app.js                    builds the Express app, middlewares, mounts the router
+  src/routes/requests.routes.js declares the three endpoints of the resource
+  src/data/requests.js          in-memory store + id generation (the only file to change
+                                when a real database appears)
+  docs/http-contract.md         the contract, read first by any outsider
+
+EXCLUDED (declared limits of this increment)
+  - no database
+  - no TypeScript
+  - no authentication / sessions / tokens
+  - no controllers / services / repositories layer
+  - no PUT, PATCH or DELETE
+  - no dependencies besides Express
+  - no frontend
