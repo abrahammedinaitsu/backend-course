@@ -51,6 +51,19 @@ function rejectServerControlledFields(body, extra = []) {
   }
 }
 
+// INC-702 fix · FIRST defense: the application validates the priority
+// against the contract BEFORE running SQL, so an invalid value becomes a
+// 400 the consumer can act on. The PostgreSQL CHECK constraint is the
+// SECOND defense and stays untouched: it protects integrity if the
+// application fails or another process writes to the table. Both are
+// kept on purpose — they answer different questions.
+function assertValidPriority(priority) {
+  if (!PRIORITIES.includes(priority)) {
+    throw new AppError('contract', 'INVALID_PRIORITY',
+      `Priority must be ${PRIORITIES.slice(0, -1).join(', ')} or ${PRIORITIES.at(-1)}.`);
+  }
+}
+
 export async function listRequests(actor, filters) {
   if (filters.status !== undefined && !isValidStatus(filters.status)) {
     throw new AppError('contract', 'INVALID_FILTER',
@@ -93,6 +106,9 @@ export async function createRequest(actor, input) {
   if (typeof title !== 'string' || title.trim() === '') {
     throw new AppError('contract', 'TITLE_REQUIRED', 'A request needs a non-empty title.');
   }
+  // INC-702 fix: creation validates the priority with the SAME rule as
+  // PATCH, before any SQL runs.
+  if (priority !== undefined) assertValidPriority(priority);
 
   // Creation is a unit of work: the request AND its birth history
   // (NULL -> open) happen together or not at all. The owner and the
@@ -132,6 +148,9 @@ export async function patchRequest(actor, id, body) {
   if (changes.title !== undefined && (typeof changes.title !== 'string' || changes.title.trim() === '')) {
     throw new AppError('contract', 'TITLE_REQUIRED', 'The title cannot be empty.');
   }
+  // INC-702 fix: the application validates priority BEFORE running SQL
+  // (first defense). The CHECK constraint remains as the second defense.
+  if (changes.priority !== undefined) assertValidPriority(changes.priority);
   if (changes.status !== undefined && !isValidStatus(changes.status)) {
     throw new AppError('contract', 'INVALID_STATUS',
       `Unknown status "${changes.status}". Valid values: ${STATUSES.join(', ')}.`);

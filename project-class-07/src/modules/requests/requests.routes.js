@@ -1,6 +1,6 @@
-// HTTP layer of the requests module: it extracts path, query, body and
-// the authenticated actor, invokes the operation, and translates results
-// and typed errors into HTTP responses. It contains no SQL and no domain
+// HTTP layer of the requests module: it extracts path, query, body and the
+// authenticated actor, invokes the operation, and translates results and
+// typed errors into HTTP responses. It contains no SQL and no domain
 // rules. The router assumes app.js mounted it behind `authenticate`, so
 // req.auth is always present here.
 
@@ -12,6 +12,7 @@ import {
   patchRequest,
   getHistory
 } from './requests.service.js';
+import { parseRequestId } from './request-id.js';
 import { respondError } from '../../http/respond-error.js';
 
 const router = express.Router();
@@ -27,7 +28,9 @@ router.get('/', async (req, res) => {
 
 router.get('/:id', async (req, res) => {
   try {
-    res.status(200).json(await getRequest(req.auth, Number(req.params.id)));
+    // INC-701 fix: validate the id BEFORE it reaches SQL. An invalid format
+    // is a consumer problem (400), not an internal failure (500).
+    res.status(200).json(await getRequest(req.auth, parseRequestId(req.params.id)));
   } catch (error) {
     respondError(res, error);
   }
@@ -35,7 +38,7 @@ router.get('/:id', async (req, res) => {
 
 router.get('/:id/history', async (req, res) => {
   try {
-    res.status(200).json(await getHistory(req.auth, Number(req.params.id)));
+    res.status(200).json(await getHistory(req.auth, parseRequestId(req.params.id)));
   } catch (error) {
     respondError(res, error);
   }
@@ -51,7 +54,7 @@ router.post('/', async (req, res) => {
 
 router.patch('/:id', async (req, res) => {
   try {
-    res.status(200).json(await patchRequest(req.auth, Number(req.params.id), req.body));
+    res.status(200).json(await patchRequest(req.auth, parseRequestId(req.params.id), req.body));
   } catch (error) {
     respondError(res, error);
   }
