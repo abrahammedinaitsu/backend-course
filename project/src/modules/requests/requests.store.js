@@ -102,7 +102,17 @@ export async function updateStatus(id, newStatus, client) {
 
 // Append one history event. `previousStatus` may be null: the birth (`NULL -> open`).
 // Requires a client on purpose (same reason as updateStatus).
+//
+// FAULT INJECTION (for the Entrega 04 rollback demo only): if INJECT_HISTORY_FAILURE is set,
+// this throws a simulated constraint failure right here — between the UPDATE and the history
+// INSERT — so the transaction must roll back the already-applied status change. It is OFF by
+// default and is a temporary demonstration hook, not part of the real logic.
 export async function insertHistory(requestId, previousStatus, newStatus, client) {
+  if (process.env.INJECT_HISTORY_FAILURE === 'true') {
+    const injected = new Error('Injected failure in history insert (rollback demo)');
+    injected.code = '23514'; // looks like a CHECK violation to the error handler
+    throw injected;
+  }
   await client.query(
     `INSERT INTO request_status_history (request_id, previous_status, new_status)
      VALUES ($1, $2, $3)`,
