@@ -9,13 +9,15 @@ import {
   findById,
   insertRequest,
   updateRequest,
-  insertHistoryEvent
+  insertHistoryEvent,
+  findHistory
 } from './requests.store.js';
-import { mapRequestRow } from './request.mapper.js';
+import { mapRequestRow, mapHistoryEventRow } from './request.mapper.js';
 import { STATUSES, isValidStatus, isTerminal, canTransition } from './request-status.js';
 import {
   canListAllRequests,
   canViewRequest,
+  canViewHistory,
   canCreateRequest,
   canEditContent,
   canChangePriority,
@@ -86,6 +88,21 @@ export async function getRequest(actor, id) {
   const request = mapRequestRow(row);
   if (!canViewRequest(actor, request)) throw notFound(id);
   return request;
+}
+
+// Same use case as getRequest, but for the history: fetch the request,
+// apply the SAME visibility policy (canViewHistory delegates to
+// canViewRequest), then read and map the events. Coordination lives HERE
+// now — the route only translates HTTP, and the SQL lives in the store.
+export async function getHistory(actor, id) {
+  const row = await findById(id);
+  if (!row) throw notFound(id);
+
+  const request = mapRequestRow(row);
+  if (!canViewHistory(actor, request)) throw notFound(id);
+
+  const events = await findHistory(id);
+  return events.map(mapHistoryEventRow);
 }
 
 export async function createRequest(actor, input) {
