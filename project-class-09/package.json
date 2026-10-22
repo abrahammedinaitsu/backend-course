@@ -1,0 +1,38 @@
+{
+  "name": "class-09-request-api",
+  "version": "8.0.0",
+  "private": true,
+  "description": "Class 09 workshop API: enter, understand and change without breaking.",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test --test-concurrency=1 \"test/*.test.js\"",
+    "test:auth": "node --test --test-concurrency=1 test/auth.test.js",
+    "test:requests": "node --test --test-concurrency=1 test/requests.test.js",
+    "generate:secret": "node scripts/generate-secret.js",
+    "db:migrate": "node scripts/migrate.js",
+    "db:seed": "node scripts/seed.js",
+    "test:policy": "node --test test/request-policy.test.js test/request-access-policy.test.js",
+    "class-09:doctor": "node scripts/check-environment.js",
+    "validate:class-09": "node scripts/validate-class-09.js",
+    "assessment:prepare": "node scripts/prepare-assessment.js",
+    "assessment:validate": "node scripts/validate-assessment-report.js",
+    "test:detail": "node --test --test-concurrency=1 test/request-detail.test.js",
+    "test:regression": "node --test --test-concurrency=1 test/regression.test.js",
+    "doctor": "node scripts/check-environment.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "jose": "^5.9.6",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0"
+  }
+}
