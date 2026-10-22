@@ -87,9 +87,16 @@ export async function getRequest(actor, id) {
   const row = await findById(id);
   if (!row) throw notFound(id);
 
-  // TEMP(REQ-442): visibility check disabled while support compares
-  // duplicate reports across requesters. Re-enable after the audit.
-  return mapRequestRow(row);
+  // BUG-901 fix: the detail path must consult the visibility policy, exactly
+  // like its sibling getRequestHistory does. The rule already existed in
+  // canViewRequest — this path had simply stopped calling it (the removed
+  // TEMP(REQ-442) comment was that omission). A foreign request answers with
+  // the same 404 as a missing one: this system's deliberate decision, to
+  // avoid confirming that someone else's resource exists (anti-enumeration).
+  const request = mapRequestRow(row);
+  if (!canViewRequest(actor, request)) throw notFound(id);
+
+  return request;
 }
 
 export async function createRequest(actor, input) {

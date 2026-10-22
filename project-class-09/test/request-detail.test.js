@@ -66,16 +66,47 @@ test('an agent can read any request', async () => {
   assert.equal(response.body.id, created.id);
 });
 
-test('a different requester receives the same 404 as a missing request', { todo: true }, async () => {
-  // BUG-901 regression: create owner + stranger (both requesters), create a
-  // request as the owner, GET it with the stranger's token.
-  // Expected after your fix: 404 — indistinguishable from "does not exist"
-  // (course decision for this system: do not confirm existence).
-  // Convert me FIRST, see me fail against the bug, then fix.
+test('a different requester receives the same 404 as a missing request', async () => {
+  // BUG-901 regression: owner + stranger (both requesters). The stranger
+  // must NOT be able to read the owner's request.
+  const owner = await createUser({ name: 'detail-stranger-owner' });
+  const stranger = await createUser({ name: 'detail-stranger' });
+  const ownerToken = await loginAs(owner);
+  const strangerToken = await loginAs(stranger);
+  const created = await createRequestAs(ownerToken);
+
+  const denied = await request(app)
+    .get(`/requests/${created.id}`)
+    .set('Authorization', `Bearer ${strangerToken}`);
+
+  assert.equal(denied.status, 404);
+  assert.equal(denied.body.error.code, 'REQUEST_NOT_FOUND');
+
+  // Indistinguishability is of status and error CODE: the response never
+  // reveals that the foreign request exists. (The message interpolates the
+  // id you asked for, which you already know — same as the history suite.)
+  const missing = await request(app)
+    .get('/requests/999999999')
+    .set('Authorization', `Bearer ${strangerToken}`);
+
+  assert.equal(missing.status, 404);
+  assert.equal(missing.body.error.code, denied.body.error.code);
+  assert.equal(denied.body.error.code, 'REQUEST_NOT_FOUND');
 });
 
-test('a userId in the query string does not grant access', { todo: true }, async () => {
-  // BUG-901 regression: stranger requests
-  //   GET /requests/:id?userId=<uuid del owner>
-  // The trusted identity comes ONLY from the verified token: still 404.
+test('a userId in the query string does not grant access', async () => {
+  // BUG-901 regression: the trusted identity comes ONLY from the verified
+  // token. Sending the owner's id in the query must change nothing.
+  const owner = await createUser({ name: 'detail-query-owner' });
+  const stranger = await createUser({ name: 'detail-query-stranger' });
+  const ownerToken = await loginAs(owner);
+  const strangerToken = await loginAs(stranger);
+  const created = await createRequestAs(ownerToken);
+
+  const response = await request(app)
+    .get(`/requests/${created.id}?userId=${owner.id}`)
+    .set('Authorization', `Bearer ${strangerToken}`);
+
+  assert.equal(response.status, 404);
+  assert.equal(response.body.error.code, 'REQUEST_NOT_FOUND');
 });
