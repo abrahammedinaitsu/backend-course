@@ -1,10 +1,42 @@
-Pega aquí la salida REAL y COMPLETA de:
+CLASS 08 ARCHITECTURE VALIDATION
 
-    npm run validate:class-08
+Baseline
+[01/12] Previous behavior preserved .......... PASS
+[02/12] Existing tests pass .................. PASS
 
-Debe incluir las 12 verificaciones con sus secciones (Baseline, Claim
-request, Boundaries), la línea de Cleanup y el FINAL RESULT.
+Claim request
+[03/12] Authentication required .............. PASS
+[04/12] Requester cannot claim ............... PASS
+[05/12] Agent can claim open request ......... PASS
+[06/12] Agent id comes from token ............ PASS
+[07/12] Request becomes in_progress .......... PASS
+[08/12] Second claim returns conflict ........ PASS
+[09/12] Terminal request cannot be claimed ... PASS
+[10/12] History event is created ............. PASS
 
-Antes de guardar, revisa que no haya ninguna credencial pegada por error:
-ni DATABASE_URL, ni JWT_SECRET, ni tokens. Si aparece algo así,
-reemplázalo por [REDACTED].
+Boundaries
+[11/12] Routes contain no SQL ................ PASS
+[12/12] Service does not depend on Express ... PASS
+
+Cleanup
+Temporary validation data removed successfully.
+
+FINAL RESULT: PASSED
+
+Nota de honestidad sobre la salida de arriba (no se edita la salida del
+validador: se reproduce tal cual, solo se recortan las lineas de ruido de
+npm/PowerShell que no son suyas):
+
+- Los 12 checks pasaron: 12/12 -> PASSED. El script imprime el resumen como
+  "FINAL RESULT: PASSED"; cada linea "[NN/12] .... PASS", contadas, son 12.
+- Esta corrida se repitio para comprobar estabilidad: PASSED en corridas
+  consecutivas.
+- Hubo UNA corrida aislada en la que el check 02 ("Existing tests pass")
+  fallo: ese check lanza un `npm test` ANIDADO contra la misma base remota
+  (Supabase pooler) mientras el validador mantiene su propio pool abierto.
+  Fue un corte transitorio de red/pooler, no un fallo de la suite: al correr
+  `npm test` por separado en ese mismo momento dio 54 pass, 0 todo, 0 fail, y
+  las corridas siguientes del validador volvieron a dar PASSED. Se documenta
+  para no ocultar el dato; la corrida limpia de arriba es la evidencia de la
+  entrega.
+

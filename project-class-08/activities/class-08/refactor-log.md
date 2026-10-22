@@ -44,7 +44,8 @@ cambió la ruta, ni el status, ni el body, ni el permiso.
 * **Función pura ganada**: `canViewHistory` y `mapHistoryEventRow` ya se pueden
   probar con objetos planos, sin HTTP ni PostgreSQL.
 * **Check de frontera 11 del validador**: pasa (la route ya no tiene SQL).
-* **Commit del refactor**: `class-08-refactor` — `[hash]`.
+* **Commit del refactor**: `class-08-refactor` — `386e8ee`
+  (padre: `04dc625` = `class-08-baseline`).
 
 ## Qué preguntaste a la IA (y qué verificaste)
 
