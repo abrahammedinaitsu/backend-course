@@ -1,0 +1,10 @@
+Pega aquí la salida REAL y COMPLETA de:
+
+    npm run validate:class-08
+
+Debe incluir las 12 verificaciones con sus secciones (Baseline, Claim
+request, Boundaries), la línea de Cleanup y el FINAL RESULT.
+
+Antes de guardar, revisa que no haya ninguna credencial pegada por error:
+ni DATABASE_URL, ni JWT_SECRET, ni tokens. Si aparece algo así,
+reemplázalo por [REDACTED].

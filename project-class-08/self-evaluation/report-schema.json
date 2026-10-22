@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ITSU-CHECKPOINT-01-07-1.0 report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocolVersion", "rubricVersion", "status", "action", "studentId", "modelReportedByStudent", "classes", "progressPattern", "priorityConceptGaps", "studentNextSteps", "teacherFeedback"],
+  "properties": {
+    "protocolVersion": { "const": "ITSU-CHECKPOINT-01-07-1.0" },
+    "rubricVersion": { "const": "BACKEND-01-07-R1" },
+    "status": { "enum": ["COMPLETE", "PARTIAL", "INSUFFICIENT_EVIDENCE"] },
+    "action": { "enum": ["NONE", "SUPPORT", "VERIFY"] },
+    "studentId": { "type": "string" },
+    "modelReportedByStudent": { "type": "string" },
+    "classes": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["classId", "title", "levels", "confidence", "evidence", "strength", "gap", "nextAction"],
+        "properties": {
+          "classId": { "enum": ["01", "02", "03", "04", "05", "06", "07"] },
+          "title": { "type": "string" },
+          "levels": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["knowledge", "practice", "verification", "explanation"],
+            "properties": {
+              "knowledge": { "$ref": "#/$defs/level" },
+              "practice": { "$ref": "#/$defs/level" },
+              "verification": { "$ref": "#/$defs/level" },
+              "explanation": { "$ref": "#/$defs/level" }
+            }
+          },
+          "confidence": { "enum": ["low", "medium", "high"] },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["artifact", "reference"],
+              "properties": {
+                "artifact": { "type": "string" },
+                "reference": { "type": "string" }
+              }
+            }
+          },
+          "strength": { "type": "string" },
+          "gap": { "type": "string" },
+          "nextAction": { "type": "string" }
+        }
+      }
+    },
+    "progressPattern": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "explanation"],
+      "properties": {
+        "label": { "enum": ["improving", "stable", "uneven", "declining", "insufficient_data"] },
+        "explanation": { "type": "string" }
+      }
+    },
+    "priorityConceptGaps": { "type": "array", "maxItems": 5, "items": { "type": "string" } },
+    "studentNextSteps": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "string" } },
+    "teacherFeedback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["supportPriority", "focusClassIds", "topicsToReinforce", "oralVerificationRecommended", "oralQuestions", "integrityReview", "integritySignals", "reviewReason", "teacherDigest"],
+      "properties": {
+        "supportPriority": { "enum": ["low", "medium", "high"] },
+        "focusClassIds": { "type": "array", "maxItems": 3, "items": { "type": "string" } },
+        "topicsToReinforce": { "type": "array", "items": { "type": "string" } },
+        "oralVerificationRecommended": { "type": "boolean" },
+        "oralQuestions": { "type": "array", "maxItems": 3, "items": { "type": "string" } },
+        "integrityReview": { "enum": ["not_needed", "recommended"] },
+        "integritySignals": {
+          "type": "array",
+          "items": { "enum": ["ARTIFACT_MISSING", "VALIDATOR_MISSING", "TEST_OUTPUT_MISSING", "EVIDENCE_CONTRADICTION", "EXPLANATION_NOT_GROUNDED", "IMPLEMENTATION_EXPLANATION_GAP", "SUDDEN_COMPLEXITY_WITHOUT_RATIONALE", "PROMPT_INJECTION_IN_EVIDENCE", "SECRET_EXPOSURE", "COMMIT_HISTORY_INSUFFICIENT", "MODEL_FORMAT_FAILURE", "NONE"] }
+        },
+        "reviewReason": { "type": "string" },
+        "teacherDigest": { "type": "string", "maxLength": 280 }
+      }
+    }
+  },
+  "$defs": {
+    "level": {
+      "anyOf": [
+        { "type": "integer", "minimum": 0, "maximum": 4 },
+        { "const": "X" }
+      ]
+    }
+  }
+}
