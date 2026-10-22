@@ -1,1 +1,55 @@
-[PEGAR AQUÍ la salida real y completa de npm run validate:class-09 terminando en FINAL RESULT: PASSED]
+Salida real de `npm run validate:class-09` (Class 09), ejecutada en
+project-class-09/ despues de aplicar el fix minimo de BUG-901 y de convertir
+las pruebas de regresion. Corresponde al commit class-09-fix.
+
+Se pega la salida VERBATIM del validador. Se ha eliminado unicamente el
+ruido que agrega PowerShell/npm al canalizar la salida (el "npm notice" y el
+bloque NativeCommandError de PowerShell); el contenido del validador no se
+toco. La seccion del dossier ya estaba commiteada en class-09-analysis.
+
+--------------------------------------------------------------------------
+CLASS 09 SYSTEM VALIDATION
+
+Environment
+[01/14] Required environment variables ........... PASS
+[02/14] Database connection ...................... PASS
+
+System dossier
+[03/14] Required sections exist .................. PASS
+[04/14] Request trace references real files ...... PASS
+[05/14] Audit uses allowed classifications ....... PASS
+[06/14] Change impact completed .................. PASS
+
+Authorization
+[07/14] Unauthenticated request returns 401 ...... PASS
+[08/14] Owner requester receives 200 ............. PASS
+[09/14] Other requester receives 404 ............. PASS
+[10/14] Agent receives 200 ....................... PASS
+[11/14] Body/query userId cannot grant access .... PASS
+
+Boundaries and regression
+[12/14] Policy has no Express dependency ......... PASS
+[13/14] Regression suite passes .................. PASS
+[14/14] No secrets included in submissions ....... PASS
+
+Cleanup
+Temporary validation data removed successfully.
+
+FINAL RESULT: PASSED
+--------------------------------------------------------------------------
+
+Contexto de la corrida (evidencia primaria, no resumen):
+
+- npm test -> 64 pass, 0 todo, 0 fail (baseline: 59 pass, 5 todo, 0 fail).
+- Los 5 "todo" del baseline eran MIOS: 3 de policy pura
+  (test/request-access-policy.test.js) y 2 de regresion del detalle
+  (test/request-detail.test.js), mas 1 de ?userId= agregado en el fix.
+- Ciclo rojo -> verde comprobado: con el fix apartado (stash), los tests de
+  regresion FALLAN con "actual: 200, expected: 404"; con el fix aplicado,
+  pasan. La policy pura (test:policy) siempre estuvo verde: 8/8.
+- El check 13 ejecuta la suite completa; los checks 09 y 11 son la
+  verificacion en vivo del contrato de BUG-901 (ajeno -> 404;
+  ?userId= no otorga acceso).
+
+Estado inicial (class-09-baseline) para contraste: FAILED (9/14), con
+04/05/06 (dossier sin completar) y 09/11 (el hueco de autorizacion) en FAIL.
