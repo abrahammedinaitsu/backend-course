@@ -9,6 +9,7 @@ import {
   findById,
   insertRequest,
   updateRequest,
+  assignRequest,
   insertHistoryEvent,
   findHistory
 } from './requests.store.js';
@@ -21,7 +22,8 @@ import {
   canCreateRequest,
   canEditContent,
   canChangePriority,
-  canChangeStatus
+  canChangeStatus,
+  canClaimRequest
 } from './request.policy.js';
 import { AppError } from '../../app-error.js';
 
@@ -224,6 +226,56 @@ export async function patchRequest(actor, id, body) {
       }, client);
     }
     return updated;
+  });
+
+  return mapRequestRow(row);
+}
+
+// FEATURE-801 · Claim a request.
+//
+// This is a business ACTION, not a two-column PATCH: it expresses intent
+// ("I take responsibility"), the server derives the identity from the
+// token, several rules run and it produces a history event.
+export async function claimRequest(actor, id, body) {
+  // assignedTo is server-controlled. Rejecting it instead of ignoring it
+  // makes the contract VISIBLE to the consumer (course decision).
+  rejectServerControlledFields(body, ['assignedTo', 'assigned_to']);
+
+  // Read, authorize against the CURRENT state, write and record history —
+  // all with the same client, as ONE unit of work. Assignment and history
+  // are consistent or neither happens.
+  const row = await withTransaction(async (client) => {
+    const current = await findById(id, client);
+    if (!current) throw notFound(id);
+
+    const request = mapRequestRow(current);
+
+    // The decision lives in the policy, with plain objects. Here we only
+    // TRANSLATE its reason into the contract's status + code.
+    const decision = canClaimRequest({ actor, request });
+    if (!decision.allowed) {
+      if (decision.reason === 'NOT_AGENT') {
+        throw forbidden('Only agents can claim a request.');
+      }
+      if (decision.reason === 'ALREADY_ASSIGNED') {
+        throw new AppError('domain', 'REQUEST_ALREADY_ASSIGNED',
+          'The request is already assigned.');
+      }
+      // NOT_OPEN: open is the only claimable state (terminal included).
+      throw new AppError('domain', 'REQUEST_NOT_CLAIMABLE',
+        `A request in status "${request.status}" cannot be claimed.`);
+    }
+
+    // The responsible agent is the AUTHENTICATED identity — never the body.
+    const claimed = await assignRequest(id, actor.userId, client);
+    await insertHistoryEvent({
+      requestId: id,
+      type: 'request_claimed',
+      fromStatus: current.status,
+      toStatus: 'in_progress',
+      changedBy: actor.userId
+    }, client);
+    return claimed;
   });
 
   return mapRequestRow(row);

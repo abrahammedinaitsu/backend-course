@@ -12,6 +12,7 @@ const REQUEST_COLUMNS = `
   priority,
   status,
   created_by,
+  assigned_to,
   created_at,
   updated_at
 `;
@@ -85,6 +86,21 @@ export async function updateRequest(id, changes, db = pool) {
      WHERE id = $${values.length}
      RETURNING ${REQUEST_COLUMNS}`,
     values
+  );
+  return result.rows[0] ?? null;
+}
+
+// FEATURE-801 · One write for the claim: the responsible agent, the new
+// status (in_progress) and the refreshed updated_at happen together.
+// This is intentionally its own function instead of a generic update: the
+// claim is an ACTION (one business meaning), not two unrelated columns.
+export async function assignRequest(id, agentId, db = pool) {
+  const result = await db.query(
+    `UPDATE requests
+     SET assigned_to = $1, status = 'in_progress', updated_at = CURRENT_TIMESTAMP
+     WHERE id = $2
+     RETURNING ${REQUEST_COLUMNS}`,
+    [agentId, id]
   );
   return result.rows[0] ?? null;
 }

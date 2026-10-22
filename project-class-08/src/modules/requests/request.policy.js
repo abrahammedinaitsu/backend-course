@@ -44,22 +44,31 @@ export function canChangeStatus(actor) {
   return actor.role === 'agent';
 }
 
-// TODO(FEATURE-801) · Claim policy (guided skeleton).
+// FEATURE-801 · Claim policy.
 //
-// The claim rule must be testable with PLAIN OBJECTS: no SQL, no JWT, no
+// The claim rule is testable with PLAIN OBJECTS: no SQL, no JWT, no
 // Express, no HTTP errors. That is the whole point of putting it here.
 //
-// Checklist:
-//   [ ] Receive { actor, request } (already-mapped representation).
-//   [ ] Only an agent may claim               -> reason 'NOT_AGENT'
-//   [ ] An assigned request cannot be claimed -> reason 'ALREADY_ASSIGNED'
-//   [ ] Only an open request can be claimed   -> reason 'NOT_OPEN'
-//   [ ] Otherwise: { allowed: true }
+// Order matters and is deliberate: the ROLE rule is evaluated first, so a
+// requester always gets NOT_AGENT (403) even on a request that is also
+// assigned or not open. Then the state rules: assigned beats not-open,
+// because "already assigned" is the more specific conflict.
 //
 // Why an explicit result instead of a boolean? Claim has THREE distinct
-// denial reasons and each maps to a different HTTP answer (403/409/409).
+// denial reasons and each maps to a different HTTP answer:
+//   NOT_AGENT        -> 403 FORBIDDEN
+//   ALREADY_ASSIGNED -> 409 REQUEST_ALREADY_ASSIGNED
+//   NOT_OPEN         -> 409 REQUEST_NOT_CLAIMABLE
 // The policy names the reason; the SERVICE translates it to an AppError.
 export function canClaimRequest({ actor, request }) {
-  // TODO(FEATURE-801): replace this placeholder with the real rules.
-  return { allowed: false, reason: 'NOT_IMPLEMENTED' };
+  if (actor.role !== 'agent') {
+    return { allowed: false, reason: 'NOT_AGENT' };
+  }
+  if (request.assignedTo !== null && request.assignedTo !== undefined) {
+    return { allowed: false, reason: 'ALREADY_ASSIGNED' };
+  }
+  if (request.status !== 'open') {
+    return { allowed: false, reason: 'NOT_OPEN' };
+  }
+  return { allowed: true };
 }
