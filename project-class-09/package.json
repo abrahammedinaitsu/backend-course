@@ -1,6 +1,6 @@
 {
   "name": "class-09-request-api",
-  "version": "8.0.0",
+  "version": "9.0.0",
   "private": true,
   "description": "Class 09 workshop API: enter, understand and change without breaking.",
   "type": "module",
