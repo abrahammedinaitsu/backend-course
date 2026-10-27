@@ -25,7 +25,7 @@
    Porque el requerimiento exige preservar la historia. Borrar destruiría la evidencia de qué
    se pidió y qué se decidió. Se cancela con `PATCH status:"cancelled"`, que deja la solicitud
    consultable. La decisión completa, con costos reconocidos, está en
-   `project/docs/decisions/001-cancel-instead-of-delete.md`.
+   `activities/class-05/project/docs/decisions/001-cancel-instead-of-delete.md`.
 
 5. **¿Qué limitación sigue teniendo el array?**
    Vive solo en memoria: al reiniciar el proceso se pierde todo (comportamiento esperado y

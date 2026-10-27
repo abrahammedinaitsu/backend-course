@@ -88,7 +88,7 @@ se borra: sigue siendo visible en el historial.
 
 - Resultados observados de todos los casos (A, B y C): `casos-de-prueba.md`.
 - Análisis y evidencia del Lite: `lite-analysis.md`.
-- Contrato del Full: `project/docs/http-contract.md`.
+- Contrato del Full: `activities/class-02/project/docs/http-contract.md`.
 - Uso de IA: `ai-usage.md`.
 - Comparación y reflexión: `comparison.md`.
 

@@ -10,7 +10,7 @@ repositorios, sin `PUT`/`PATCH`/`DELETE`, sin dependencias además de Express, s
 ## What I asked for
 
 Usé IA **solo en la fase Full**, después de haber marcado el análisis del Lite con el tag
-`class-02-lite-analysis`. Primero escribí `project/spec.txt` (recurso, endpoints, estados
+`class-02-lite-analysis`. Primero escribí `activities/class-02/project/spec.txt` (recurso, endpoints, estados
 esperados, representación, almacenamiento, estructura y exclusiones) y `docs/http-contract.md`.
 Recién después pedí la implementación.
 

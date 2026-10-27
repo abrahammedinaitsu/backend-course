@@ -18,7 +18,7 @@ API modular de **solicitudes de mantenimiento**, construida con Express y persis
 ## Configuración y ejecución
 
 ```bash
-cd project
+Set-Location .\activities\class-05\project
 npm install
 copy .env.example .env      # Windows (o `cp` en Linux/macOS)
 ```
@@ -63,7 +63,7 @@ npm run validate:class-05        # boss battle integral (12 checks) -> 12/12
 ## Estructura y responsabilidades
 
 ```txt
-project/
+activities/class-05/project/
 ├── .env.example             Plantilla de configuración (sin valores reales).
 ├── .gitignore               Ignora .env y node_modules.
 ├── activities/class-05/     El diseño de acceso (matriz, contrato de auth, amenazas) y la evidencia.

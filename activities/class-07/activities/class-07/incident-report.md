@@ -4,7 +4,7 @@ Completado **mientras** investigaba cada incidente. Separo hechos (Evidence)
 de interpretaciones (Hypotheses): un "creo que" nunca va en Evidence.
 
 Identidad de la guardia:
-- Proyecto: `project-class-07/` (deriva de la solución de la clase 06, con defectos deliberados).
+- Proyecto: `activities/class-07/` (deriva de la solución de la clase 06, con defectos deliberados).
 - Base: **la misma de la clase 06** (esquema `class06` de Supabase). Migraciones en `SKIPPED`.
 - Node v24.16.0 · `node:test` + Supertest · Express 5.
 

@@ -19,14 +19,14 @@ activities/class-04/
 └── reflection.md           ← reflexión final (fase 6)
 ```
 
-El proyecto actualizado vive en `project/` (raíz del repositorio).
+El proyecto actualizado vive en `activities/class-05/project/`.
 
 ## Cómo ejecutar el proyecto
 
-```bash
-cd project
+```powershell
+Set-Location .\activities\class-05\project
 npm install
-copy .env.example .env      # Windows (o `cp` en Linux/macOS)
+Copy-Item .env.example .env
 # editar .env con TU DATABASE_URL (Session pooler, puerto 5432)
 npm run db:check            # prueba de conexión (imprime la base y la versión, nunca la URL)
 # ejecutar database/migrations/001 y 002 en el SQL Editor de Supabase, en orden
@@ -47,7 +47,7 @@ npm start                   # Request API en http://localhost:3000
    con rollback, historial y los cinco endpoints.
 4. **IA con frontera** — la IA revisa **después** de la marca; no cambia esquema/contrato/reglas
    en silencio. Todo se registra en `ai-usage.md`.
-5. **Decisión técnica** — `project/docs/decisions/002-preserve-status-history.md`.
+5. **Decisión técnica** — `activities/class-05/project/docs/decisions/002-preserve-status-history.md`.
 6. **Demostración** — matriz ejecutada: persistencia tras reinicio y rollback demostrado;
    reflexión (12 preguntas).
 

@@ -1,6 +1,6 @@
 # AI usage — Entrega 05A
 
-Uso de IA en la interfaz (`frontend/app/`). El taller permite IA para el frontend; lo que **no**
+Uso de IA en la interfaz (`activities/class-05/frontend/app/`). El taller permite IA para el frontend; lo que **no**
 permite es cambiar el contrato, inventar endpoints, desactivar la autenticación, enviar
 `createdBy`/`role`, simular el backend ni tratar ocultar botones como autorización.
 

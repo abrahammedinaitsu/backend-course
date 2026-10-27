@@ -28,7 +28,7 @@ borres, sustitúyelos por tu contenido real.
 
 ## Paso a paso
 
-1. **Genera tu tarjeta** (desde `project-class-09/`), con tu correo del
+1. **Genera tu tarjeta** (desde `activities/class-09/`), con tu correo del
    curso o tu ID académico:
 
    ```bash

@@ -101,7 +101,7 @@ nombre (`400 SERVER_CONTROLLED_FIELD`).
 ## 007 — Dónde vive el token en el frontend (entrega 05A)
 
 **Decisión:** el token (`accessToken`) y el usuario actual viven **solo en memoria**, en
-`frontend/app/session.js`. No se usan `localStorage` ni `sessionStorage`.
+`activities/class-05/frontend/app/session.js`. No se usan `localStorage` ni `sessionStorage`.
 
 **Alternativas:** persistir el token para «no perder la sesión» al recargar.
 
@@ -114,7 +114,7 @@ se hardcodea un token.
 
 ## 008 — La interfaz no es la autorización (entrega 05A)
 
-**Decisión:** el frontend mantiene un **espejo** de la política (`frontend/app/domain.js`:
+**Decisión:** el frontend mantiene un **espejo** de la política (`activities/class-05/frontend/app/domain.js`:
 `canEditContent`, `canChangePriority`, `canChangeStatus`) usado **solo** para decidir qué mostrar.
 El `<select>` de estado se puebla únicamente con `availableTransitions(status)`.
 
@@ -129,7 +129,7 @@ o no es tuya», respetando la decisión 002 (no filtrar existencia).
 
 ## 009 — Los estados de interfaz deben ser distinguibles (entrega 05A)
 
-**Decisión:** un solo clasificador (`frontend/app/errors.js`) traduce `(status, body)` a un mensaje y
+**Decisión:** un solo clasificador (`activities/class-05/frontend/app/errors.js`) traduce `(status, body)` a un mensaje y
 un `kind` propios: `0` (sin red/CORS) · `400` · `401` · `403` · `404` · `409` · `500` · `503`. Nada de
 un «algo salió mal» genérico.
 
@@ -155,4 +155,3 @@ se «decodifica» y luego falla la verificación enseña en cinco segundos la co
 (leer ≠ confiar). El árbol convierte criterios en una decisión trazable. La matriz demuestra que
 «autenticado» no es «autorizado». Todo ejemplo es **ficticio** (ningún token, contraseña ni clave
 real) y el contenido construye el DOM con `textContent`, nunca `innerHTML`.
-

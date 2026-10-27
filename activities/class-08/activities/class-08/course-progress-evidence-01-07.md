@@ -8,9 +8,9 @@ Generado automáticamente — completa las secciones marcadas con [COMPLETAR] an
 * studentId: [COMPLETAR — tu identificador de estudiante, sin datos personales extra]
 * promptVersion: ITSU-CHECKPOINT-01-07-1.0
 * rubricVersion: BACKEND-01-07-R1
-* generatedAt: 2026-10-22T01:46:29.880Z (EXECUTED_NOW)
-* repoRoot: backend-course
-* commit: 70b2205 (EXECUTED_NOW)
+* generatedAt: 2026-10-27T22:54:19.110Z (EXECUTED_NOW)
+* repoRoot: DBE
+* commit: 6c338da (EXECUTED_NOW)
 * repositorioRemoto: https://github.com/abrahammedinaitsu/backend-course.git (EXECUTED_NOW) — verifica que sea TU repositorio antes de continuar
 * modeloUtilizado: [COMPLETAR después de ejecutar el prompt]
 
@@ -23,14 +23,14 @@ del repositorio remoto del estudiante y sus respuestas. La ausencia de
 commits aquí no debe interpretarse como evidencia faltante.
 
 ```text
-70b2205 class-07-observability
-a2ada39 class-07-incidents-fixed
-9a3358c class-07-baseline
-5b7ce95 class-06-submission
-0786a25 class-06-regression-fixed
-ecfb931 class-06-environment-ready
-a63cfcd docs(class-05): decision log del frontend (007-010) y data-model v5
-12fea5d feat(frontend): entrega 05B - El mundo de la autenticacion (/learn)
+6c338da docs: add repository guide and correct class 09 version
+770d3da class-09-submission
+6e9e7e3 class-09-fix
+91f6ec2 class-09-analysis
+ccfed56 class-09-baseline
+f67b3ac class-08-submission
+28ba2fc class-08-feature
+386e8ee class-08-refactor
 ```
 
 ## Evidencia por clase
@@ -245,7 +245,7 @@ activities/class-03/
 └── reflection.md        Fase 5 — ocho preguntas de reflexión.
 ```
 
-El proyecto transversal actualizado vive en `project/` (ver su propio README).
+El proyecto transversal actualizado vive en `activities/class-05/project/` (ver su README).
 
 ## Fases de la entrega
 
@@ -255,7 +255,7 @@ El proyecto transversal actualizado vive en `project/` (ver su propio README).
    `PATCH` con transiciones, filtros y formato de error unificado.
 3. **IA con contrato** — la IA revisa/propone **después** de la marca; no puede cambiar en
    silencio estados, rutas, códigos, campos ni estructura. Todo se registra en `ai-usage.md`.
-4. **Decisión técnica** — `project/docs/decisions/001-cancel-instead-of-delete.md`.
+4. **Decisión técnica** — `activities/class-05/project/docs/decisions/001-cancel-instead-of-delete.md`.
 5. **Verificación y reflexión** — ejecutar la matriz con `curl` y completar `reflection.md`.
 [... 18 líneas más]
 ```
@@ -271,9 +271,10 @@ El proyecto transversal actualizado vive en `project/` (ver su propio README).
 * FOUND: activities\class-04\reflection.md
 * FOUND: activities\class-04\test-matrix.md
 * FOUND: activities\class-04\transaction-plan.md
-* FOUND: project-class-06\scripts\seed.js
-* FOUND: project-class-07\scripts\seed.js
-* FOUND: project-class-08\scripts\seed.js
+* FOUND: activities\class-06\scripts\seed.js
+* FOUND: activities\class-07\scripts\seed.js
+* FOUND: activities\class-08\scripts\seed.js
+* … 1 archivo(s) más con el mismo patrón
 
 Extracto de activities\class-04\README.md (redactado automáticamente):
 
@@ -299,14 +300,14 @@ activities/class-04/
 └── reflection.md           ← reflexión final (fase 6)
 ```
 
-El proyecto actualizado vive en `project/` (raíz del repositorio).
+El proyecto actualizado vive en `activities/class-05/project/`.
 
 ## Cómo ejecutar el proyecto
 
-```bash
-cd project
+```powershell
+Set-Location .\activities\class-05\project
 npm install
-copy .env.example .env      # Windows (o `cp` en Linux/macOS)
+Copy-Item .env.example .env
 # editar .env con TU DATABASE_URL (Session pooler, puerto 5432)
 [... 53 líneas más]
 ```
@@ -318,14 +319,14 @@ copy .env.example .env      # Windows (o `cp` en Linux/macOS)
 * FOUND: activities\class-05\ai-usage.md
 * FOUND: activities\class-05\auth-contract.md
 * FOUND: activities\class-05\decision-log.md
-* FOUND: activities\class-05\reflection.md
-* FOUND: activities\class-05\threat-cases.md
-* FOUND: activities\class-05\validation-evidence.md — salida guardada, NOT_VERIFIED como ejecución
-* FOUND: project\activities\class-05\README.md
-* FOUND: project\activities\class-05\access-matrix.md
-* FOUND: project\activities\class-05\ai-usage.md
-* FOUND: project\activities\class-05\auth-contract.md
-* … 5 archivo(s) más con el mismo patrón
+* FOUND: activities\class-05\frontend\.gitignore
+* FOUND: activities\class-05\frontend\README.md
+* FOUND: activities\class-05\frontend\app\README.md
+* FOUND: activities\class-05\frontend\app\ai-usage.md
+* FOUND: activities\class-05\frontend\app\api.js
+* FOUND: activities\class-05\frontend\app\domain.js
+* FOUND: activities\class-05\frontend\app\errors.js
+* … 65 archivo(s) más con el mismo patrón
 
 Extracto de activities\class-05\auth-contract.md (redactado automáticamente):
 
@@ -363,7 +364,7 @@ Errores:
 [... 68 líneas más]
 ```
 
-Extracto de activities\class-05\validation-evidence.md (redactado automáticamente):
+Extracto de activities\class-05\project\activities\class-05\validation-evidence.md (redactado automáticamente):
 
 ```text
 # Evidencia de validación — Clase 05
@@ -401,21 +402,21 @@ RESULT: 5/5
 
 ### Clase 06 — Onboarding y pruebas
 
-* FOUND: project-class-06\.gitignore
-* FOUND: project-class-06\README.md
-* FOUND: project-class-06\activities\class-06\README.md
-* FOUND: project-class-06\activities\class-06\validation-evidence.txt — salida guardada, NOT_VERIFIED como ejecución
-* FOUND: project-class-06\activities\class-06\work-log.md
-* FOUND: project-class-06\database\migrations\001_create_users.sql
-* FOUND: project-class-06\database\migrations\002_create_requests.sql
-* FOUND: project-class-06\database\migrations\003_create_request_history.sql
-* FOUND: project-class-06\database\migrations\004_add_constraints_and_indexes.sql
-* FOUND: project-class-06\package-lock.json
-* FOUND: project-class-06\package.json
-* FOUND: project-class-06\recovery\README.md
-* … 41 archivo(s) más con el mismo patrón
+* FOUND: activities\class-06\.gitignore
+* FOUND: activities\class-06\README.md
+* FOUND: activities\class-06\activities\class-06\README.md
+* FOUND: activities\class-06\activities\class-06\validation-evidence.txt — salida guardada, NOT_VERIFIED como ejecución
+* FOUND: activities\class-06\activities\class-06\work-log.md
+* FOUND: activities\class-06\database\migrations\001_create_users.sql
+* FOUND: activities\class-06\database\migrations\002_create_requests.sql
+* FOUND: activities\class-06\database\migrations\003_create_request_history.sql
+* FOUND: activities\class-06\database\migrations\004_add_constraints_and_indexes.sql
+* FOUND: activities\class-06\package-lock.json
+* FOUND: activities\class-06\package.json
+* FOUND: activities\class-06\recovery\README.md
+* … 42 archivo(s) más con el mismo patrón
 
-Extracto de project-class-06\activities\class-06\work-log.md (redactado automáticamente):
+Extracto de activities\class-06\activities\class-06\work-log.md (redactado automáticamente):
 
 ```text
 # Class 06 work log — Mi primer ticket en un backend existente
@@ -451,7 +452,7 @@ propio esquema de PostgreSQL (`class06`)** para que sus tablas
 [... 280 líneas más]
 ```
 
-Extracto de project-class-06\activities\class-06\validation-evidence.txt (redactado automáticamente):
+Extracto de activities\class-06\activities\class-06\validation-evidence.txt (redactado automáticamente):
 
 ```text
 Salida real de: npm run validate:class-06
@@ -489,21 +490,21 @@ FINAL RESULT: PASSED
 
 ### Clase 07 — Diagnóstico y errores
 
-* FOUND: project-class-07\.gitignore
-* FOUND: project-class-07\README.md
-* FOUND: project-class-07\activities\class-07\README.md
-* FOUND: project-class-07\activities\class-07\incident-report.md
-* FOUND: project-class-07\activities\class-07\validation-evidence.txt — salida guardada, NOT_VERIFIED como ejecución
-* FOUND: project-class-07\database\migrations\001_create_users.sql
-* FOUND: project-class-07\database\migrations\002_create_requests.sql
-* FOUND: project-class-07\database\migrations\003_create_request_history.sql
-* FOUND: project-class-07\database\migrations\004_add_constraints_and_indexes.sql
-* FOUND: project-class-07\incidents\INC-701-invalid-request-id.md
-* FOUND: project-class-07\incidents\INC-702-invalid-priority.md
-* FOUND: project-class-07\incidents\OPS-703-untraceable-errors.md
-* … 52 archivo(s) más con el mismo patrón
+* FOUND: activities\class-07\.gitignore
+* FOUND: activities\class-07\README.md
+* FOUND: activities\class-07\activities\class-07\README.md
+* FOUND: activities\class-07\activities\class-07\incident-report.md
+* FOUND: activities\class-07\activities\class-07\validation-evidence.txt — salida guardada, NOT_VERIFIED como ejecución
+* FOUND: activities\class-07\database\migrations\001_create_users.sql
+* FOUND: activities\class-07\database\migrations\002_create_requests.sql
+* FOUND: activities\class-07\database\migrations\003_create_request_history.sql
+* FOUND: activities\class-07\database\migrations\004_add_constraints_and_indexes.sql
+* FOUND: activities\class-07\incidents\INC-701-invalid-request-id.md
+* FOUND: activities\class-07\incidents\INC-702-invalid-priority.md
+* FOUND: activities\class-07\incidents\OPS-703-untraceable-errors.md
+* … 54 archivo(s) más con el mismo patrón
 
-Extracto de project-class-07\activities\class-07\incident-report.md (redactado automáticamente):
+Extracto de activities\class-07\activities\class-07\incident-report.md (redactado automáticamente):
 
 ```text
 # Class 07 incident report
@@ -512,7 +513,7 @@ Completado **mientras** investigaba cada incidente. Separo hechos (Evidence)
 de interpretaciones (Hypotheses): un "creo que" nunca va en Evidence.
 
 Identidad de la guardia:
-- Proyecto: `project-class-07/` (deriva de la solución de la clase 06, con defectos deliberados).
+- Proyecto: `activities/class-07/` (deriva de la solución de la clase 06, con defectos deliberados).
 - Base: **la misma de la clase 06** (esquema `class06` de Supabase). Migraciones en `SKIPPED`.
 - Node v24.16.0 · `node:test` + Supertest · Express 5.
 
@@ -539,7 +540,7 @@ Punto de comparación común: el commit inicial quedó en `class-07-baseline`. S
 [... 358 líneas más]
 ```
 
-Extracto de project-class-07\activities\class-07\validation-evidence.txt (redactado automáticamente):
+Extracto de activities\class-07\activities\class-07\validation-evidence.txt (redactado automáticamente):
 
 ```text
 Salida real de: npm run validate:class-07
@@ -577,9 +578,9 @@ Temporary validation data removed successfully.
 
 ## Estado previo a la clase 8
 
-* Validadores disponibles (clases 1-7): project-class-06\scripts\validate-class-06.js, project-class-07\scripts\validate-class-06.js, project-class-07\scripts\validate-class-07.js, project-class-08\scripts\validate-class-06.js, project-class-08\scripts\validate-class-07.js, project\scripts\validate-class-05.js
+* Validadores disponibles (clases 1-7): activities\class-05\project\scripts\validate-class-05.js, activities\class-06\scripts\validate-class-06.js, activities\class-07\scripts\validate-class-06.js, activities\class-07\scripts\validate-class-07.js, activities\class-08\scripts\validate-class-06.js, activities\class-08\scripts\validate-class-07.js
 * Carpetas de pruebas: NOT_FOUND
-* Último commit antes del taller: 70b2205
+* Último commit antes del taller: 6c338da
 
 ## Cuestionario diagnóstico (responde aquí, 3-6 líneas cada una)
 

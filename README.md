@@ -1,67 +1,63 @@
 # Backend Course
 
 Repositorio de actividades y proyectos para aprender desarrollo backend de
-forma progresiva: desde el recorrido de una petición HTTP hasta una API con
-autenticación, autorización, persistencia, pruebas y una interfaz cliente.
+forma progresiva: fundamentos de HTTP, diseño de APIs, persistencia,
+autenticación, autorización, pruebas y una interfaz cliente.
 
-## Mapa del repositorio
+## Estructura
 
 | Ruta | Contenido |
 | --- | --- |
-| [`activities/class-01/`](activities/class-01/) | Fundamentos de HTTP, servidores Node.js y diagnóstico de fallas. |
-| [`activities/class-02/`](activities/class-02/) | Contratos HTTP y comparación entre una API Lite y una API modular. |
-| [`activities/class-03/`](activities/class-03/) | Diseño de recursos, estados, transiciones y contratos. |
-| [`activities/class-04/`](activities/class-04/) | Persistencia con PostgreSQL, integridad, transacciones e historial. |
-| [`activities/class-05/`](activities/class-05/) | Autenticación, propiedad, autorización y evidencias del taller. |
-| [`project/`](project/) | API transversal desarrollada durante las clases 03–05. |
-| [`project-class-06/`](project-class-06/) | Proyecto de la clase 06: primeros tickets en una API existente. |
-| [`project-class-07/`](project-class-07/) | Proyecto de la clase 07: diagnóstico de errores y observabilidad. |
-| [`project-class-08/`](project-class-08/) | Proyecto de la clase 08: refactor y asignación de solicitudes. |
-| [`project-class-09/`](project-class-09/) | Proyecto de la clase 09: incorporación y corrección de un defecto. |
-| [`frontend/`](frontend/) | Interfaz para la API y material interactivo sobre autenticación. |
+| [`activities/class-01/`](activities/class-01/) | Fundamentos de HTTP y servidores Node.js. |
+| [`activities/class-02/`](activities/class-02/) | Contratos HTTP y APIs Lite y Full. |
+| [`activities/class-03/`](activities/class-03/) | Recursos, estados, transiciones y reglas. |
+| [`activities/class-04/`](activities/class-04/) | PostgreSQL, persistencia e historial. |
+| [`activities/class-05/`](activities/class-05/) | Autenticación, autorización, API transversal e interfaz. |
+| [`activities/class-06/`](activities/class-06/) | Primeros tickets en un backend existente. |
+| [`activities/class-07/`](activities/class-07/) | Diagnóstico de incidentes y observabilidad. |
+| [`activities/class-08/`](activities/class-08/) | Refactor y asignación de solicitudes. |
+| [`activities/class-09/`](activities/class-09/) | Incorporación al sistema y corrección de un defecto. |
+| [`activities/class-10/`](activities/class-10/) | Carpeta reservada para la clase 10. |
+| [`m24-class-autoguide/`](m24-class-autoguide/) | Guías y materiales del módulo M24. |
+| [`resources-notes/`](resources-notes/) | Recursos y notas generales del curso. |
 
-Cada `project-class-*` es una versión autónoma del taller correspondiente;
-`project/` es el proyecto transversal. Consulta el `README.md` de la carpeta
-que elijas antes de instalar dependencias o ejecutar comandos.
+Cada clase contiene sus materiales y, cuando corresponde, su proyecto
+ejecutable. La API transversal desarrollada entre las clases 03–05 y el
+frontend asociado están en `activities/class-05/project/` y
+`activities/class-05/frontend/`.
 
 ## Requisitos
 
-- Node.js 20 o posterior para los proyectos más recientes.
-- npm, incluido con Node.js.
+- Node.js y npm. Los proyectos más recientes requieren Node.js 20 o posterior.
 - PostgreSQL/Supabase y configuración local para los proyectos que lo
-  requieran. Los valores de conexión y las credenciales se obtienen y
-  configuran por cuenta propia.
-
-## Empezar
+  indiquen en su README.
 
 No hay un `package.json` en la raíz: instala dependencias y ejecuta comandos
-desde la carpeta del proyecto que quieras usar. Por ejemplo, en Windows:
+desde la carpeta del proyecto que quieras utilizar. Por ejemplo, en Windows:
 
 ```powershell
-Set-Location .\project-class-09
+Set-Location .\activities\class-09
 npm ci
 Copy-Item .env.example .env
 ```
 
-Completa `.env` siguiendo las instrucciones de ese proyecto y, después,
-ejecuta su suite:
+Completa `.env` siguiendo la guía de esa clase y ejecuta las pruebas desde
+esa carpeta:
 
 ```powershell
 npm test
 ```
 
-Los proyectos de las clases 06–09 requieren `DATABASE_URL` y `JWT_SECRET`;
-sus pruebas de integración usan la base configurada. La interfaz también se
-puede compilar por separado:
+Para compilar la interfaz:
 
 ```powershell
-Set-Location .\frontend
+Set-Location .\activities\class-05\frontend
 npm ci
 npm run build
 ```
 
-Revisa el README del proyecto para conocer migraciones, seed, validadores,
-pruebas específicas y requisitos de cada actividad.
+Consulta el README de cada clase antes de configurar la base de datos,
+ejecutar migraciones o cargar datos de ejemplo.
 
 ## Protección de datos
 

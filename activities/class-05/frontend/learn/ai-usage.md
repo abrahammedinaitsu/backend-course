@@ -1,6 +1,6 @@
 # AI usage — Entrega 05B
 
-Uso de IA en «El mundo de la autenticación» (`frontend/learn/`). La entrega **exige** investigar y
+Uso de IA en «El mundo de la autenticación» (`activities/class-05/frontend/learn/`). La entrega **exige** investigar y
 citar fuentes; la IA se usó como apoyo de redacción y de arquitectura de contenido, **no** como
 fuente de verdad. Toda afirmación técnica importante se ancló a una fuente primaria o autoritativa
 (ver el tema 20 y `content.js`).

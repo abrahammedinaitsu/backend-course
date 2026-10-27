@@ -1,6 +1,6 @@
 # Entrega 05A — Interfaz para la API (detalle de archivos)
 
-El README de la entrega está en `../README.md` (raíz de `frontend/`). Aquí solo el mapa de archivos
+El README de la entrega está en `../README.md` (raíz de `activities/class-05/frontend/`). Aquí solo el mapa de archivos
 de `app/` y la decisión del token, para tenerla a mano.
 
 ```txt

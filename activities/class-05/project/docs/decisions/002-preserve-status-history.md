@@ -1,6 +1,6 @@
 # Preserve request status history
 
-> Decisión 002 · va en `project/docs/decisions/002-preserve-status-history.md`.
+> Decisión 002 · va en `activities/class-05/project/docs/decisions/002-preserve-status-history.md`.
 > Igual que en la 001: sin costos reconocidos en ambas opciones no hay decisión, hay propaganda.
 
 ## Context

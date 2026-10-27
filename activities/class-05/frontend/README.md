@@ -12,14 +12,14 @@ frontend/
 ## Arranque
 
 ```bash
-cd frontend
+Set-Location .\activities\class-05\frontend
 npm install
 copy .env.example .env      # Windows (o `cp` en Linux/macOS)
 # editar .env: VITE_API_URL apuntando a TU backend
 npm run dev                 # http://localhost:5173
 ```
 
-En el backend (`project/.env`) debe estar:
+En el backend (`activities/class-05/project/.env`) debe estar:
 
 ```env
 FRONTEND_ORIGIN=http://localhost:5173
@@ -126,4 +126,4 @@ Ejecutada a mano en el navegador y contra la API (extracto; comandos reproducibl
 No se incluyen credenciales reales en el repositorio. Para probar: crea una cuenta con
 **Registrarme** (nace como `requester`) y, si necesitas probar el rol agent, promueve una cuenta
 sintética por SQL directo (la API **no** permite elegir rol). El validador del taller
-(`project/scripts/validate-class-05.js`) hace exactamente eso para sus pruebas.
+(`activities/class-05/project/scripts/validate-class-05.js`) hace exactamente eso para sus pruebas.

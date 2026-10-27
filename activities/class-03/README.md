@@ -16,7 +16,7 @@ activities/class-03/
 └── reflection.md        Fase 5 — ocho preguntas de reflexión.
 ```
 
-El proyecto transversal actualizado vive en `project/` (ver su propio README).
+El proyecto transversal actualizado vive en `activities/class-05/project/` (ver su README).
 
 ## Fases de la entrega
 
@@ -26,7 +26,7 @@ El proyecto transversal actualizado vive en `project/` (ver su propio README).
    `PATCH` con transiciones, filtros y formato de error unificado.
 3. **IA con contrato** — la IA revisa/propone **después** de la marca; no puede cambiar en
    silencio estados, rutas, códigos, campos ni estructura. Todo se registra en `ai-usage.md`.
-4. **Decisión técnica** — `project/docs/decisions/001-cancel-instead-of-delete.md`.
+4. **Decisión técnica** — `activities/class-05/project/docs/decisions/001-cancel-instead-of-delete.md`.
 5. **Verificación y reflexión** — ejecutar la matriz con `curl` y completar `reflection.md`.
 
 ## Resumen de decisiones de diseño

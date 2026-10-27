@@ -20,7 +20,8 @@ después solo obedece.
 
 La IA **no puede usarse** hasta que pase:
 
-```bash
+```powershell
+Set-Location .\activities\class-05\project
 npm run validate:class-05 -- --stage access-design
 ```
 
@@ -45,13 +46,15 @@ Estado de las estaciones (detalle en `validation-evidence.md`):
 
 ## Dónde vive este directorio
 
-El validador (`project/scripts/validate-class-05.js`) busca estos documentos en
-`project/activities/class-05/`. Este directorio del repositorio (`activities/class-05/`, junto a
-las demás clases) es la **copia de registro** de la entrega; el contenido es el mismo.
+El validador (`activities/class-05/project/scripts/validate-class-05.js`) busca
+los documentos del diseño en `activities/class-05/project/activities/class-05/`.
+La carpeta `activities/class-05/` contiene la copia de registro de la entrega,
+junto con el código del proyecto y las dos entregas de frontend.
 
 ## Entregables de frontend (misma clase, semanas siguientes)
 
-- **05A** → `frontend/app/` — interfaz real que consume esta API (auth, roles, estados de UI).
-  Terminada y verificada en el navegador contra el backend (detalle en `frontend/README.md`).
-- **05B** → `frontend/learn/` — documentación interactiva «El mundo de la autenticación»
-  (20 contenidos, 5 interacciones, 19 fuentes). Detalle en `frontend/learn/README.md`.
+- **05A** → `activities/class-05/frontend/app/` — interfaz real que consume esta API
+  (auth, roles, estados de UI). Detalle en `activities/class-05/frontend/README.md`.
+- **05B** → `activities/class-05/frontend/learn/` — documentación interactiva
+  «El mundo de la autenticación» (20 contenidos, 5 interacciones, 19 fuentes).
+  Detalle en `activities/class-05/frontend/learn/README.md`.
