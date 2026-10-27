@@ -17,8 +17,6 @@ autenticación, autorización, pruebas y una interfaz cliente.
 | [`activities/class-07/`](activities/class-07/) | Diagnóstico de incidentes y observabilidad. |
 | [`activities/class-08/`](activities/class-08/) | Refactor y asignación de solicitudes. |
 | [`activities/class-09/`](activities/class-09/) | Incorporación al sistema y corrección de un defecto. |
-| [`activities/class-10/`](activities/class-10/) | Carpeta reservada para la clase 10. |
-| [`m24-class-autoguide/`](m24-class-autoguide/) | Guías y materiales del módulo M24. |
 | [`resources-notes/`](resources-notes/) | Recursos y notas generales del curso. |
 
 Cada clase contiene sus materiales y, cuando corresponde, su proyecto
@@ -64,4 +62,3 @@ ejecutar migraciones o cargar datos de ejemplo.
 - No compartas ni confirmes archivos `.env`, tokens ni cadenas de conexión.
 - Usa `.env.example` como plantilla y datos sintéticos en las pruebas.
 - No ejecutes migraciones o seed contra una base que no sea tuya.
-

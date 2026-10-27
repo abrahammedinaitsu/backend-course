@@ -6,8 +6,8 @@ justificar un proyecto separado).
 
 ## Cómo se usa
 
-```bash
-cd frontend
+```powershell
+Set-Location .\activities\class-05\frontend
 npm install
 npm run dev
 # abrir http://localhost:5173/learn/
